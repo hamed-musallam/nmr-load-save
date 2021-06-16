@@ -1,11 +1,11 @@
 # nmr-load-save
 
-[![NPM version][npm-image]][npm-url]
-[![build status][ci-image]][ci-url]
-[![Test coverage][codecov-image]][codecov-url]
-[![npm download][download-image]][download-url]
-
-Package to load and save NMR spectra.
+<p align="center">
+  Package to load and save NMR spectra.
+</p>
+<p align="center">
+  <img alt="NMReDATA" src="images/readDiagram.svg">
+</p>
 
 ## Installation
 
@@ -14,27 +14,25 @@ Package to load and save NMR spectra.
 ## Usage
 
 ```js
-import NmrLoadSave from 'nmr-load-save';
+import { readFileSyn } from 'fs';
+import { read, writeNmredata } from 'nmr-load-save';
 
-// we can read a molfile or a jcamp
-readText(arrayBuffer|string) {
-  const text = ensureString(value)
-  // jcamp if contains ##title
-  // molfile if contains v2000 or v3000
+const binary = readFileSync('dataPath');
+// we can read a zip, jdx, nmredata, nmrium file extensions
+read({name, binary}) {
+  // based on extension we choose the format processor
   return {
     spectra: [],
     molecules: [],
   }
 }
 
-read(arrayBuffer|string, filename) {
-  // based on extension we should try to guess the format
-
-
-  return {
-    spectra: [],
-    molecules: [],
-  }
+// we can create nmredata from the output format of read function
+writeNmredata({
+  spectra: [],
+  molecules: [],
+}) {
+  //it returns a jszip instances with the nmrRecord
 }
 
 ```
