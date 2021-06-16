@@ -35,6 +35,13 @@ const tags: Tags = {
   id: 'ID',
 };
 
+/**
+ * create a nmr-record from the usual json exported from read function. 
+ * @param state - json format that includes molecules and nmr spectra.
+ * @param options - options for nmredata generator, its possible to assign an ID tag or select the prefix of each nmredata name.
+ * @returns 
+ */
+
 export async function writeNmredata(state: State, options: any = {}): Promise<JSZipType> {
   const { spectra: data, molecules } = state || {
     spectra: [],

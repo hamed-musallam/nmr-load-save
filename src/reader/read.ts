@@ -15,9 +15,9 @@ import { readNMReData } from './readNMReData';
 import { readZip } from './readZip';
 
 /**
- * read nmr data based on the file extension
- * @param files {Array<Object>} - List of objects
- * @param options
+ * read nmr data based on the file extension.
+ * @param files - List of objects.
+ * @param options - options for each kind of processor.
  * @returns
  */
 
