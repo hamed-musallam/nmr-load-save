@@ -17,6 +17,16 @@ interface ZipFiles {
   [key: string]: JSZipObject;
 }
 
+export async function readNMReData(
+  file: LoadedFiles,
+  options: NmredataParsingOptions = {},
+) {
+  const { base64 } = options;
+  const jszip = new Jszip();
+  const zip = await jszip.loadAsync(file.binary, { base64 });
+  return readNMReDataFiles(zip.files, options);
+}
+
 export async function readNMReDataFiles(
   files: ZipFiles,
   options: NmredataParsingOptions,
@@ -51,16 +61,6 @@ export async function readNMReDataFiles(
   }
 
   return nmrium;
-}
-
-export async function readNMReData(
-  file: LoadedFiles,
-  options: NmredataParsingOptions = {},
-) {
-  const { base64 } = options;
-  const jszip = new Jszip();
-  const zip = await jszip.loadAsync(file.binary, { base64 });
-  return readNMReDataFiles(zip.files, options);
 }
 
 async function getSpectra(

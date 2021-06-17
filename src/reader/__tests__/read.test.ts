@@ -18,6 +18,7 @@ describe('read by extension', () => {
       binary: jcampData,
     });
     const spectrum = result.spectra[0] as Spectrum1D;
+    expect(result.spectra).toHaveLength(1);
     expect(spectrum.info.isFid).toBe(false);
     expect(spectrum.data.x).toHaveLength(32 * 1024);
     expect(spectrum.info.solvent).toBe('CDCl3');
@@ -32,6 +33,7 @@ describe('read by extension', () => {
       },
       { base64: true },
     );
+    expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
     expect(spectrum.data.x).toHaveLength(16384);
@@ -58,6 +60,7 @@ describe('read by extension', () => {
       name: 'jeol.jdf',
       binary: data,
     });
+    expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum2D;
     expect(spectrum.info.nucleus[0]).toStrictEqual('1H');
     expect(spectrum.info.nucleus[1]).toStrictEqual('13C');
