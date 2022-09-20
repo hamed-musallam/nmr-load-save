@@ -1,2 +1,3 @@
-export { read } from "./reader/read";
-export { writeNmredata } from './writer/writeNmredata';
+export { read } from './reader/read';
+export * from './migration/MigrationManager';
+// export { writeNmredata } from './writer/writeNmredata';

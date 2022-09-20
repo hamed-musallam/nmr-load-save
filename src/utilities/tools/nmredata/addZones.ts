@@ -1,21 +1,33 @@
-import { ObjectXY } from '../../../../types/ObjectXY';
-import { Signal2D } from '../../../../types/Signals/Signal2D';
-import { Spectrum2D } from '../../../../types/Spectra/Spectrum2D';
-import { Zone } from '../../../../types/Zones/Zone';
+import { Signal2D } from '../../../types/Signals/Signal2D';
+import { Spectrum2D } from '../../../types/Spectra/Spectrum2D';
+import { Zone } from '../../../types/Zones/Zone';
 import generateID from '../../generateID';
 
-const axisLabels: Array<string> = ['x', 'y'];
-const defaultShift: ObjectXY = { x: 0, y: 0 };
+type AxisLabels = 'x' | 'y';
+interface Signal2DFromNmredata
+  extends Record<
+    AxisLabels,
+    {
+      delta: number;
+      coupling?: Array<{ coupling: number; diaIDs?: string[] }>;
+      diaIDs?: string[];
+    }
+  > {
+  activeCoupling: Array<{ coupling: number; diaIDs?: string[] }>;
+}
+
+const axisLabels: AxisLabels[] = ['x', 'y'];
+const defaultShift = { x: 0, y: 0 };
 
 export function addZones(
-  signals: Array<any>,
+  signals: Signal2DFromNmredata[],
   datum: Spectrum2D,
   options: any = {},
 ) {
   let zones: any[] = [];
   const { shift = defaultShift } = options;
-  const { baseFrequency = [400, 400] } = datum.info;
-  const frequency: ObjectXY = { x: baseFrequency[0], y: baseFrequency[1] };
+  const { originFrequency = [400, 400] } = datum.info;
+  const frequency = { x: originFrequency[0], y: originFrequency[1] };
 
   for (const signal of signals) {
     let zone: Partial<Zone> = {
@@ -29,9 +41,9 @@ export function addZones(
       kind: 'signal',
       peak: [],
     };
-    let width: ObjectXY = { x: 10, y: 10 };
+    let width = { x: 10, y: 10 };
     for (let axis of axisLabels) {
-      let { coupling = [], delta, diaID = [] } = signal[axis];
+      let { coupling = [], delta, diaIDs = [] } = signal[axis];
       for (let j of coupling) {
         width[axis] += j.coupling;
       }
@@ -50,13 +62,13 @@ export function addZones(
 
       signalFormated[axis] = {
         delta,
-        diaID,
+        diaIDs,
         originDelta: delta - shift[axis],
       };
     }
     zones.push({
       ...zone,
-      signal: [signalFormated],
+      signals: [signalFormated],
     });
   }
   datum.zones.values = zones;

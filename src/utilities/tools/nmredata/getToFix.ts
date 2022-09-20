@@ -1,4 +1,4 @@
-export function getToFix(nucleusArray: Array<string>|string = '') {
+export function getToFix(nucleusArray: Array<string> | string = '') {
   if (!Array.isArray(nucleusArray)) nucleusArray = [nucleusArray];
   let toFix = [];
   for (let nucleus of nucleusArray) {

@@ -1,8 +1,8 @@
-interface filesTypes {
-  [key: string]: string
+interface FilesTypes {
+  [key: string]: string;
 }
 
-export const FILES_TYPES: filesTypes = {
+export const FILES_TYPES: FilesTypes = {
   MOL: 'mol',
   NMRIUM: 'nmrium',
   JSON: 'json',

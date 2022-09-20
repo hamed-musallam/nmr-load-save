@@ -1,17 +1,24 @@
-import { JcampParsingOptions } from '../../types/Options/JcampParsingOptions';
-import { Options } from '../../types/Options/Options';
-import { Output } from '../../types/Output';
+import { migrate } from '../migration/MigrationManager';
+import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
+import type { Options } from '../types/Options/Options';
+import type { Output } from '../types/Output';
 import { formatSpectrum1D } from '../utilities/formatSpectrum1D';
 import { formatSpectrum2D } from '../utilities/formatSpectrum2D';
 
+import { UsedColors } from './UsedColors';
 import { readJcampFromURL } from './readJcamp';
 
 type Text = string;
 
-export async function readJSON(text: Text, options: Options = {}): Promise<Output> {
+export async function readJSON(
+  text: Text,
+  usedColors: UsedColors,
+  options: Options = {},
+): Promise<Output> {
   let output: any = { spectra: [], molecules: [] };
 
-  const data = JSON.parse(text.toString());
+  const parsedData = JSON.parse(text.toString());
+  const data = migrate(parsedData);
 
   const spectra = output.spectra;
   let promises = [];
@@ -20,23 +27,40 @@ export async function readJSON(text: Text, options: Options = {}): Promise<Outpu
     if (datum.source.jcampURL != null) {
       const { jcampParsingOptions } = options;
       promises.push(
-        addJcampFromURL(spectra, datum.source.jcampURL, datum, jcampParsingOptions),
+        addJcampFromURL(spectra, usedColors, {
+          jcampURL: datum.source.jcampURL,
+          datum,
+          jcampParsingOptions,
+        }),
       );
     } else {
       const { dimension } = datum.info;
       if (dimension === 1) {
-        spectra.push(formatSpectrum1D(datum));
+        spectra.push(formatSpectrum1D(datum, usedColors));
       } else if (dimension === 2) {
-        spectra.push(formatSpectrum2D(datum));
+        spectra.push(formatSpectrum2D(datum, usedColors));
       }
     }
   }
   await Promise.all(promises);
-  return { ...data, ...{ spectra }};
+  return { ...data, ...{ spectra } };
 }
 
-async function addJcampFromURL(spectra: any, jcampURL: any, datum: any, options?: JcampParsingOptions) {
-  const result = await readJcampFromURL(jcampURL, options);
+async function addJcampFromURL(
+  spectra: any,
+  usedColors: UsedColors,
+  options: {
+    jcampURL: string;
+    datum: any;
+    jcampParsingOptions?: JcampParsingOptions;
+  },
+) {
+  const { jcampURL, datum, jcampParsingOptions } = options;
+  const result = await readJcampFromURL(
+    jcampURL,
+    usedColors,
+    jcampParsingOptions,
+  );
   if (result) {
     for (let spectrum of result.spectra) {
       spectra.push({ ...spectrum, ...datum });

@@ -1,62 +1,45 @@
-import JSZip from 'jszip';
+import { fileListFromZip, PartialFile } from 'filelist-utils';
 
-import { LoadedFiles } from '../../types/LoadedFiles';
-import { Options } from '../../types/Options/Options';
-import { Output } from '../../types/Output';
+import type { Options } from '../types/Options/Options';
+import type { Output } from '../types/Output';
 import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
-import { loadFilesFromZip } from '../utilities/files/loadFilesFromZip';
+import { hasBruker } from '../utilities/hasBruker';
+import { hasOthers } from '../utilities/hasOthers';
 
+import { UsedColors } from './UsedColors';
 import { read } from './read';
-import { readBrukerZip } from './readBrukerZip';
+import { readBruker } from './readBruker';
 
-export async function readZip(
-  zipFile: string | ArrayBuffer,
+export async function readZipFile(
+  file: PartialFile,
+  usedColors: UsedColors,
   options: Options = {},
 ): Promise<Output> {
-  const { base64 } = options;
-  const jszip = new JSZip();
-  let zip = await jszip.loadAsync(zipFile, { base64 });
+  return readZip(await file.arrayBuffer(), usedColors, options);
+}
 
+export async function readZip(
+  zipBuffer: ArrayBuffer,
+  usedColors: UsedColors,
+  options: Options = {},
+) {
+  const files = await fileListFromZip(zipBuffer);
   let result: Output = { spectra: [], molecules: [] };
 
-  let uniqueFileExtensions: Array<string> = [];
-  for (let name in zip.files) {
-    let extension: string = getFileExtension(name);
-    if (!uniqueFileExtensions.includes(extension)) {
-      uniqueFileExtensions.push(extension);
-    }
-  }
-
-  let hasBruker = Object.keys(zip.files).some((name) =>
-    ['2rr', 'fid', '1r'].some((brukerFile) => name.endsWith(brukerFile)),
-  );
-
-  if (hasBruker) {
+  if (hasBruker(files)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBrukerZip(
-      zipFile,
-      {
-        base64,
-        ...brukerParsingOptions,
-      }
-    );
+    let partialResult: Output = await readBruker(files, usedColors, {
+      ...brukerParsingOptions,
+    });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
   }
 
-  let hasOthers = uniqueFileExtensions.some(
-    (ex) => FILES_TYPES[ex.toUpperCase()],
-  );
-
-  if (hasOthers) {
-    const zipFiles: Array<any> = Object.values(zip.files);
-    const selectedFilesByExtensions = zipFiles.filter((file: any) =>
-      FILES_TYPES[getFileExtension(file.name).toUpperCase()],
+  if (hasOthers(files)) {
+    const residualFiles = files.filter(
+      (file) => FILES_TYPES[getFileExtension(file.name).toUpperCase()],
     );
-    let files: LoadedFiles[] = await loadFilesFromZip(
-      selectedFilesByExtensions,
-    );
-    let partialResult: Output = await read(files, options);
+    let partialResult: Output = await read(residualFiles, usedColors, options);
     result.spectra.push(...partialResult.spectra);
     result.molecules.push(...partialResult.molecules);
   }

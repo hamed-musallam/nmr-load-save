@@ -5,7 +5,10 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "typeRoots": ["./types/**/*", "./node_modules/@types"]
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["src/types/**/*", "./node_modules/@types"]
   },
-  "include": ["./src/**/*", "./types/**/*"]
+  "include": ["./src/**/*", "src/types/**/*"],
+  "exclude": ["node_modules"]
 }

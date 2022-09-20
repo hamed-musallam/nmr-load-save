@@ -1,15 +1,24 @@
+import { PartialFile } from 'filelist-utils';
 import { fromJEOL } from 'nmr-parser';
 
-import { Data1D } from '../../types/Data1D';
-import { Data2D } from '../../types/Data2D';
-import { Options } from '../../types/Options/Options';
+import type { Data1D } from '../types/Data1D';
+import type { Data2D } from '../types/Data2D';
+import type { Options } from '../types/Options/Options';
 import { formatSpectra } from '../utilities/formatSpectra';
 
-export function readJDF(jdf: ArrayBuffer, options: Options) {
+import { UsedColors } from './UsedColors';
+
+export async function readJDF(
+  file: PartialFile,
+  usedColors: UsedColors,
+  options: Options,
+) {
+  const jdf = await file.arrayBuffer();
   const { name = '' } = options;
   let output: any = { spectra: [], molecules: [] };
 
-  let converted = fromJEOL(jdf);
+  const jeolData = fromJEOL(jdf);
+  const converted = jeolData[0];
   let info = converted.description;
   let metadata = info.metadata;
   const acquisitionMode = 0;
@@ -58,7 +67,7 @@ export function readJDF(jdf: ArrayBuffer, options: Options) {
       ...options,
     },
   ];
-  return formatSpectra(output);
+  return formatSpectra(output, usedColors);
 }
 
 function format1D(result: any): Data1D {
@@ -72,35 +81,33 @@ function format1D(result: any): Data1D {
   let offset = dimension.coordinatesOffset.magnitude;
 
   let buffer = dependentVariables[0].components[0];
+  const re = new Float64Array(n);
+  const im = new Float64Array(n);
+  for (let i = buffer.length - 1, index = 0; i > 0; i -= 2) {
+    re[index] = buffer[i - 1];
+    im[index++] = buffer[i];
+  }
 
   let data: any = {};
-  const bufferLength = buffer.length;
-  data.re = new Float64Array(bufferLength / 2);
-  data.im = new Float64Array(bufferLength / 2);
-
-  let i, x0;
+  let [i, x0] = [0, 0];
   switch (quantityName) {
     case 'frequency':
       x0 = 0 + (offset / origin) * 1000000;
       i = (incr / origin) * 1000000;
-      for (let i = bufferLength - 1, index = 0; i > 0; i -= 2) {
-        data.re[index] = buffer[i - 1];
-        data.im[index++] = buffer[i];
-      }
+      data.re = re;
+      data.im = im;
       break;
     case 'time':
       x0 = origin;
       i = incr;
-      for (let i = 1, index = 0; i < bufferLength; i += 2) {
-        data.re[index] = buffer[i - 1];
-        data.im[index++] = buffer[i];
-      }
+      data.re = re.reverse();
+      data.im = im.reverse().map((z) => -z);
       break;
     default:
       break;
   }
 
-  let scale = [];
+  let scale: number[] = [];
   for (let x = 0; x < n; x++) {
     scale.push(x0 + x * i);
   }
@@ -113,7 +120,6 @@ function format2D(result: any): Data2D {
   let dimensions = result.dimensions;
   let dependentVariables = result.dependentVariables;
   let quantityName = dimensions[0].quantityName;
-
   let reBuffer = [];
   let imBuffer = [];
   let maxZ = Number.MIN_SAFE_INTEGER;

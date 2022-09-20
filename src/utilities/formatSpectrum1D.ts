@@ -1,10 +1,14 @@
-// import { Spectrum1D } from 'cheminfo-types';
-import { Spectrum1D } from '../../types/Spectra/Spectrum1D';
+import { UsedColors } from '../reader/UsedColors';
+import { Spectrum1D } from '../types/Spectra/Spectrum1D';
 
 import generateID from './generateID';
-import { getData } from './utility';
+import { get1DColor } from './getColor';
+import { getData } from './getData';
 
-export function formatSpectrum1D(spectrumData: any): Spectrum1D {
+export function formatSpectrum1D(
+  spectrumData: any,
+  usedColors: UsedColors,
+): Spectrum1D {
   const {
     id = generateID(),
     shiftX = 0,
@@ -20,11 +24,6 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
   spectrum.source = {
     ...{
       jcampURL: null,
-      file: {
-        binary: null,
-        name: '',
-        extension: '',
-      },
     },
     ...source,
   };
@@ -41,7 +40,6 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
       x: [],
       re: [],
       im: [],
-      y: [],
     },
     ...data,
   };
@@ -56,17 +54,15 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
     ...info,
   };
 
-  spectrum.display = Object.assign(
-    {
-      name: spectrumData.display?.name ? spectrumData.display.name : id,
-      color: 'black',
-      isVisible: true,
-      isPeaksMarkersVisible: true,
-      isRealSpectrumVisible: true,
-      isVisibleInDomain: true,
-    },
-    spectrumData.display,
-  )
+  spectrum.display = {
+    name: spectrumData.display?.name ? spectrumData.display.name : id,
+    ...getColor(spectrumData, usedColors),
+    isVisible: true,
+    isPeaksMarkersVisible: true,
+    isRealSpectrumVisible: true,
+    isVisibleInDomain: true,
+    ...spectrumData.display,
+  };
 
   spectrum.originalData = spectrum.data;
 
@@ -82,7 +78,20 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
     ...spectrumData.ranges,
   };
 
-  spectrum.data.y = spectrum.data.re;
-
   return spectrum;
+}
+
+function getColor(options: any, usedColors: UsedColors) {
+  let color = 'black';
+  if (options?.display?.color === undefined) {
+    color = get1DColor(false, usedColors['1d'] || []);
+  } else {
+    color = options.display.color;
+  }
+
+  if (usedColors['1d']) {
+    usedColors['1d'].push(color);
+  }
+
+  return { color };
 }

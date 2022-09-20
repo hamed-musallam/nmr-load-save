@@ -1,43 +1,62 @@
 import fetch from 'cross-fetch';
+import { PartialFile } from 'filelist-utils';
 import { fromJCAMP } from 'nmr-parser';
 
-import { JcampParsingOptions } from '../../types/Options/JcampParsingOptions';
-import { Output } from '../../types/Output';
+import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
+import { Output } from '../types/Output';
 import { formatSpectra } from '../utilities/formatSpectra';
 import generateID from '../utilities/generateID';
 
-type Text = string | ArrayBuffer;
-export function readJcamp(text: Text, options: JcampParsingOptions = {}): Output {
+import { UsedColors } from './UsedColors';
+
+export async function readJcamp(
+  file: PartialFile,
+  usedColors: UsedColors,
+  options: JcampParsingOptions = {},
+): Promise<Output> {
+  const text = await file.text();
+  return processJcamp(text, usedColors, options);
+}
+
+export function readJcampFromURL(
+  jcampURL: string,
+  usedColors: UsedColors,
+  options: JcampParsingOptions = {},
+): Promise<Output> {
+  return fetch(jcampURL)
+    .then((response) => response.text())
+    .then((jcamp) =>
+      processJcamp(jcamp, usedColors, {
+        ...{ source: { jcampURL } },
+        ...options,
+      }),
+    );
+}
+
+function processJcamp(
+  text: string,
+  usedColors: UsedColors,
+  options: JcampParsingOptions = {},
+) {
   let output: any = { spectra: [], molecules: [] };
 
-  let entries = fromJCAMP(
-    text,
-    {
-      ...{
-        noContour: true,
-        xy: true,
-        keepRecordsRegExp: /.*/,
-        profiling: true,
-      },
-      ...options,
+  let entries = fromJCAMP(text, {
+    ...{
+      noContour: true,
+      xy: true,
+      keepRecordsRegExp: /.*/,
+      profiling: true,
     },
-  );
+    ...options,
+  });
 
-  const { name = `jcamp${generateID()}`} = options;
-  const { source = { file: { name, extension: 'jdx', binary: text} } } = options;
+  const { name = `jcamp${generateID()}` } = options;
+  const { source = { file: { name, extension: 'jdx', binary: text } } } =
+    options;
   for (let entry of entries) {
     const { dependentVariables, info, meta } = entry;
     output.spectra.push({ dependentVariables, meta, info, source });
   }
 
-  return formatSpectra(output);
-}
-
-export function readJcampFromURL(jcampURL: string, options: JcampParsingOptions = {}): Promise<Output> {
-  return fetch(jcampURL)
-    .then((response) => response.arrayBuffer())
-    .then((jcamp) => readJcamp(jcamp, {
-      ...{ source: { jcampURL } },
-      ...options
-    }));
+  return formatSpectra(output, usedColors);
 }
