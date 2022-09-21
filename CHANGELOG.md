@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.1.0...v0.2.0) (2022-09-21)
+
+
+### Features
+
+* use filelist as input  ([#4](https://www.github.com/cheminfo/nmr-load-save/issues/4)) ([9ca799c](https://www.github.com/cheminfo/nmr-load-save/commit/9ca799c89b28c1a2114e16c7d3e3c8523620effa))
+
 ## 0.1.0 (2021-06-16)
 
 
