@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.1](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.0...v0.2.1) (2022-09-21)
+
+
+### Bug Fixes
+
+* getData of imaginary data ([e2478bc](https://www.github.com/cheminfo/nmr-load-save/commit/e2478bce805fbaee6bc8b675f2108339ab252457))
+
 ## [0.2.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.1.0...v0.2.0) (2022-09-21)
 
 
