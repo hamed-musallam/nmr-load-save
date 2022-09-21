@@ -60,6 +60,7 @@
     "cheminfo-types": "^1.4.0",
     "cross-fetch": "^3.1.4",
     "filelist-utils": "^0.7.1",
+    "is-any-array": "^2.0.0",
     "ml-spectra-processing": "^6.6.0",
     "nmr-parser": "^2.0.1",
     "nmr-processing": "^9.1.0",

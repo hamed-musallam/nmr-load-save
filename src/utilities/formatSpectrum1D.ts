@@ -1,3 +1,5 @@
+import { isAnyArray } from 'is-any-array';
+
 import { UsedColors } from '../reader/UsedColors';
 import { Spectrum1D } from '../types/Spectra/Spectrum1D';
 
@@ -32,7 +34,7 @@ export function formatSpectrum1D(
 
   let { data = getData(dependentVariables[0].components) } = spectrumData;
 
-  if (data.im) info.isComplex = true;
+  if (isAnyArray(data.im)) info.isComplex = true;
   if (Array.isArray(info.nucleus)) info.nucleus = info.nucleus[0];
 
   spectrum.data = {
