@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.2](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.1...v0.2.2) (2022-09-27)
+
+
+### Bug Fixes
+
+* change increment calculation ([0d98b13](https://www.github.com/cheminfo/nmr-load-save/commit/0d98b130eeeed6108c19bc4a67667b4c2a8d6acb))
+
 ### [0.2.1](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.0...v0.2.1) (2022-09-21)
 
 
