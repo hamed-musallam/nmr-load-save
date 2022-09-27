@@ -32,7 +32,6 @@ export async function readJDF(
   const frequencyOffset = info.frequencyOffset;
 
   const spectralWidthClipped = converted.application.spectralWidthClipped;
-
   let data;
   if (converted.dependentVariables) {
     if (info.dimension === 1) {
@@ -83,6 +82,7 @@ function format1D(result: any): Data1D {
   let buffer = dependentVariables[0].components[0];
   const re = new Float64Array(n);
   const im = new Float64Array(n);
+
   for (let i = buffer.length - 1, index = 0; i > 0; i -= 2) {
     re[index] = buffer[i - 1];
     im[index++] = buffer[i];

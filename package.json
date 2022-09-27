@@ -62,7 +62,7 @@
     "filelist-utils": "^0.7.1",
     "is-any-array": "^2.0.0",
     "ml-spectra-processing": "^6.6.0",
-    "nmr-parser": "^2.0.1",
+    "nmr-parser": "^2.0.2",
     "nmr-processing": "^9.1.0",
     "nmredata": "^0.8.0",
     "openchemlib": "^7.4.0",

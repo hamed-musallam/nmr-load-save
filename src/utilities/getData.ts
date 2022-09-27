@@ -18,7 +18,7 @@ interface Spectra1D {
 export function getData(spectra: Spectra1D[]) {
   let x = spectra[0]?.data?.x || [];
   let re = spectra[0]?.data?.re || spectra[0]?.data?.y || [];
-  let im = spectra[0]?.data?.im || spectra[0]?.data?.y || null;
+  let im = spectra[0]?.data?.im || spectra[1]?.data?.y || null;
 
   if (x.length > 0 && x[0] > x[1]) {
     x.reverse();
