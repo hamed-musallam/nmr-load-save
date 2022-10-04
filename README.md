@@ -14,27 +14,19 @@
 ## Usage
 
 ```js
-import { readFileSyn } from 'fs';
+import { fileCollectionFromPath } from 'filelist-utils';
 import { read, writeNmredata } from 'nmr-load-save';
 
-const binary = readFileSync('dataPath');
-// we can read a zip, jdx, nmredata, nmrium file extensions
-read({name, binary}) {
-  // based on extension we choose the format processor
-  return {
-    spectra: [],
-    molecules: [],
-  }
-}
+const fileCollection = fileCollectionFromPath('path_to_data');
+// we can read a zip, jdx, jdf, nmredata, json, nmrium file extensions
+const result = await read(fileCollection, options);
 
-// we can create nmredata from the output format of read function
-writeNmredata({
-  spectra: [],
-  molecules: [],
-}) {
-  //it returns a jszip instances with the nmrRecord
-}
-
+// based on extension we choose the format processor
+console.log(result);
+// return {
+//   spectra: [],
+//   molecules: [],
+// }
 ```
 
 ## License

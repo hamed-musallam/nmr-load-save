@@ -1,7 +1,14 @@
 import { join } from 'path';
 
-import { getZipped, getFile as getBrukerFile } from 'bruker-data-test';
-import { fileListFromPath } from 'filelist-utils';
+import {
+  getData as getBrukerData,
+  getFile as getBrukerFile,
+} from 'bruker-data-test';
+import {
+  FileCollection,
+  fileCollectionFromZip,
+  fileCollectionFromPath,
+} from 'filelist-utils';
 import { getFile as getJcampFile } from 'jcamp-data-test';
 import { getFile as getJeolFile } from 'jeol-data-test';
 import { getFile as getNMReDataFileList } from 'nmredata-data-test';
@@ -20,12 +27,9 @@ describe('read by extension', () => {
     expect(spectrum.data.x).toHaveLength(32 * 1024);
     expect(spectrum.info.solvent).toBe('CDCl3');
   });
-  it('Bruker fileList of a zip', async () => {
-    const zippedFileList = await getZipped();
-    const files = zippedFileList.filter(
-      (file) => file.name === 'aspirin-1h.zip',
-    );
-    const result = await read(files);
+  it('Bruker fileCollection of a zip', async () => {
+    const brukerFile = await getBrukerFile('aspirin-1h.zip');
+    const result = await read(new FileCollection([brukerFile]));
     expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
@@ -33,9 +37,19 @@ describe('read by extension', () => {
     expect(spectrum.info.solvent).toBe('CDCl3');
   });
 
+  it('Bruker FileCollectionItem of a zip', async () => {
+    const brukerFile = await getBrukerFile('aspirin-1h.zip');
+    const result = await read(brukerFile);
+    expect(result.spectra).toHaveLength(1);
+    const spectrum = result.spectra[0] as Spectrum1D;
+    expect(spectrum.info.isFid).toBe(true);
+    expect(spectrum.data.x).toHaveLength(16384);
+    expect(spectrum.info.solvent).toBe('CDCl3');
+  });
   it('Bruker fileList of a folder', async () => {
-    const brukerFileList = await getBrukerFile('aspirin-1h.zip');
-    const result = await read(brukerFileList);
+    const zipBuffer = await getBrukerData('aspirin-1h.zip');
+    const fileCollection = await fileCollectionFromZip(zipBuffer);
+    const result = await read(fileCollection);
     expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
@@ -67,7 +81,7 @@ describe('read by extension', () => {
 
   it('nmrium fetch jcampURL', async () => {
     const path = join(__dirname, './nmriumDataTest');
-    const files = await fileListFromPath(path);
+    const files = await fileCollectionFromPath(path);
     const data = await read(files);
     expect(data.spectra).toHaveLength(3);
   });

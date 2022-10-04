@@ -1,4 +1,4 @@
-import { PartialFileList } from 'filelist-utils';
+import { FileCollection } from 'filelist-utils';
 import { fromBruker } from 'nmr-parser';
 
 import { BrukerParsingOptions } from '../types/Options/BrukerParsingOptions';
@@ -8,7 +8,7 @@ import { formatSpectra } from '../utilities/formatSpectra';
 import { UsedColors } from './UsedColors';
 
 export async function readBruker(
-  files: PartialFileList,
+  files: FileCollection,
   usedColors: UsedColors,
   options: BrukerParsingOptions = {},
 ): Promise<Output> {

@@ -1,10 +1,10 @@
 declare module 'nmredata' {
-  import { PartialFileList } from 'filelist-utils';
+  import { FileCollection } from 'filelist-utils';
   import { Molecule } from 'openchemlib';
 
   function nmrRecordToJSON(options: {
     sdf: SdfData;
-    files: PartialFileList;
+    fileCollection: FileCollection;
     molecule?: Molecule;
   }): any;
 
@@ -21,5 +21,5 @@ declare module 'nmredata' {
     filename: string;
     root: string;
   }
-  function getSDF(files: PartialFileList): Promise<SdfData[]>;
+  function getSDF(files: FileCollection): Promise<SdfData[]>;
 }

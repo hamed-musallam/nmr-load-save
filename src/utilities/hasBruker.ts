@@ -1,7 +1,7 @@
-import { PartialFileList } from 'filelist-utils';
+import { FileCollection } from 'filelist-utils';
 
-export function hasBruker(files: PartialFileList) {
-  return files.some((file) =>
+export function hasBruker(fileCollection: FileCollection) {
+  return fileCollection.files.some((file) =>
     ['2rr', 'fid', '1r'].some((brukerFile) => file.name.endsWith(brukerFile)),
   );
 }

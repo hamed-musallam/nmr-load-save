@@ -1,4 +1,8 @@
-import { fileListFromZip, PartialFile } from 'filelist-utils';
+import {
+  FileCollection,
+  fileCollectionFromZip,
+  FileCollectionItem,
+} from 'filelist-utils';
 
 import type { Options } from '../types/Options/Options';
 import type { Output } from '../types/Output';
@@ -12,7 +16,7 @@ import { read } from './read';
 import { readBruker } from './readBruker';
 
 export async function readZipFile(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: Options = {},
 ): Promise<Output> {
@@ -24,22 +28,27 @@ export async function readZip(
   usedColors: UsedColors,
   options: Options = {},
 ) {
-  const files = await fileListFromZip(zipBuffer);
+  const fileCollection = await fileCollectionFromZip(zipBuffer);
   let result: Output = { spectra: [], molecules: [] };
 
-  if (hasBruker(files)) {
+  if (hasBruker(fileCollection)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBruker(files, usedColors, {
+    let partialResult: Output = await readBruker(fileCollection, usedColors, {
       ...brukerParsingOptions,
     });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
   }
 
-  if (hasOthers(files)) {
-    const residualFiles = files.filter(
+  if (hasOthers(fileCollection)) {
+    const residualFiles = fileCollection.files.filter(
       (file) => FILES_TYPES[getFileExtension(file.name).toUpperCase()],
     );
-    let partialResult: Output = await read(residualFiles, usedColors, options);
+    const newFileCollection = new FileCollection(residualFiles);
+    let partialResult: Output = await read(
+      newFileCollection,
+      usedColors,
+      options,
+    );
     result.spectra.push(...partialResult.spectra);
     result.molecules.push(...partialResult.molecules);
   }

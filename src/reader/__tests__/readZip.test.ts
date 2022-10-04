@@ -1,16 +1,21 @@
-import { fileListFromPath } from 'filelist-utils';
+import { join, resolve } from 'path';
+
+import { fileCollectionFromPath } from 'filelist-utils';
 
 import { Spectrum1D } from '../../types/Spectra/Spectrum1D';
 import { readZipFile } from '../readZip';
 
 describe('readZip', () => {
   it('zip with two spectra and molfile', async () => {
-    const path = './src/reader/__tests__/nmriumDataTest';
-    const files = await fileListFromPath(path, {
+    let path = join(__dirname, 'nmriumDataTest/');
+    path = resolve(path);
+    const fileCollection = await fileCollectionFromPath(path, {
       unzip: { zipExtensions: [] },
       ungzip: { gzipExtensions: [] },
     });
-    const zipFile = files.filter((file) => file.name === 'dataTest.zip');
+    const zipFile = fileCollection.files.filter(
+      (file) => file.name === 'dataTest.zip',
+    );
     let result = await readZipFile(zipFile[0], { '1d': [], '2d': [] });
     expect(result.spectra).toHaveLength(2);
     expect(result.molecules).toHaveLength(1);

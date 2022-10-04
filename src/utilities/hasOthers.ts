@@ -1,10 +1,10 @@
-import { PartialFileList } from 'filelist-utils';
+import { FileCollection } from 'filelist-utils';
 
 import { FILES_TYPES } from './files/constants';
 import { getFileExtension } from './files/getFileExtension';
 
-export function hasOthers(files: PartialFileList) {
-  return files.some(
+export function hasOthers(fileCollection: FileCollection) {
+  return fileCollection.files.some(
     (file) => FILES_TYPES[getFileExtension(file.name).toUpperCase()],
   );
 }

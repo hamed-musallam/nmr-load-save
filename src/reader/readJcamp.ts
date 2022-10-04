@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch';
-import { PartialFile } from 'filelist-utils';
+import { FileCollectionItem } from 'filelist-utils';
 import { fromJCAMP } from 'nmr-parser';
 
 import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
@@ -10,7 +10,7 @@ import generateID from '../utilities/generateID';
 import { UsedColors } from './UsedColors';
 
 export async function readJcamp(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: JcampParsingOptions = {},
 ): Promise<Output> {

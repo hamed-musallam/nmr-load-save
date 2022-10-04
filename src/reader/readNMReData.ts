@@ -1,4 +1,4 @@
-import { fileListFromZip, PartialFile } from 'filelist-utils';
+import { fileCollectionFromZip, FileCollectionItem } from 'filelist-utils';
 import { nmrRecordToJSON, getSDF } from 'nmredata';
 
 import { NmredataParsingOptions } from '../types/Options/NmredataParsingOptions';
@@ -13,14 +13,14 @@ import { readBruker } from './readBruker';
 import { readJcamp, readJcampFromURL } from './readJcamp';
 
 export async function readNMReData(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: NmredataParsingOptions = {},
 ) {
-  const files = await fileListFromZip(await file.arrayBuffer());
-  const sdfFiles = await getSDF(files);
+  const fileCollection = await fileCollectionFromZip(await file.arrayBuffer());
+  const sdfFiles = await getSDF(fileCollection);
 
-  const jsonData = await nmrRecordToJSON({ sdf: sdfFiles[0], files });
+  const jsonData = await nmrRecordToJSON({ sdf: sdfFiles[0], fileCollection });
 
   let { spectra, molecules = [] } = jsonData;
 
@@ -70,12 +70,12 @@ async function getSpectra(
 
   switch (file.type) {
     case 'jcamp':
-      return readJcamp(file.files[0], usedColors, {
+      return readJcamp(file.fileCollection.files[0], usedColors, {
         ...{ xy: true, noContours: true },
         ...jcampParsingOptions,
       });
     case 'brukerFiles':
-      return readBruker(file.files, usedColors, {
+      return readBruker(file.fileCollection, usedColors, {
         ...{ xy: true, noContours: true, keepOriginal: true },
         ...brukerParsingOptions,
       });

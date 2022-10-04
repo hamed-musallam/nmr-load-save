@@ -1,4 +1,4 @@
-import { PartialFile } from 'filelist-utils';
+import { FileCollectionItem } from 'filelist-utils';
 import { fromJEOL } from 'nmr-parser';
 
 import type { Data1D } from '../types/Data1D';
@@ -9,7 +9,7 @@ import { formatSpectra } from '../utilities/formatSpectra';
 import { UsedColors } from './UsedColors';
 
 export async function readJDF(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: Options,
 ) {

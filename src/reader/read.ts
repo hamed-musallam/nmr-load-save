@@ -1,4 +1,4 @@
-import { PartialFile, PartialFileList } from 'filelist-utils';
+import { FileCollection, FileCollectionItem } from 'filelist-utils';
 
 import type { Options } from '../types/Options/Options';
 import type { Output } from '../types/Output';
@@ -14,6 +14,7 @@ import { readJSON } from './readJSON';
 import { readJcamp } from './readJcamp';
 import { readNMReData } from './readNMReData';
 import { readZip, readZipFile } from './readZip';
+import { isAnyArray } from 'is-any-array';
 
 /**
  * read nmr data based on the file extension.
@@ -22,35 +23,45 @@ import { readZip, readZipFile } from './readZip';
  * @returns
  */
 
-function ensurePartialFileList<T extends PartialFile | PartialFileList>(
-  files: T,
-): PartialFileList {
-  return !Array.isArray(files) ? [files] : files;
+function ensureFileCollection<T extends FileCollectionItem | FileCollection>(
+  input: T,
+): FileCollection {
+  if (isAnyArray(input)) {
+    throw new Error(
+      'For a set of fileCollectionItems pass a FileCollection instance',
+    );
+  }
+  return isFileCollection(input) ? input : new FileCollection([input]);
+}
+
+function isFileCollection(
+  input: FileCollectionItem | FileCollection,
+): input is FileCollection {
+  return typeof input === 'object' && 'files' in input;
 }
 
 export async function read(
-  input: PartialFile | PartialFileList,
+  input: FileCollection | FileCollectionItem,
   usedColors: UsedColors = { '1d': [], '2d': [] },
   options: Partial<Options> = {},
 ): Promise<Output> {
   let result: Output = { spectra: [], molecules: [] };
 
-  const files = ensurePartialFileList(input);
+  const fileCollection = ensureFileCollection(input);
 
-  if (hasBruker(files)) {
+  if (hasBruker(fileCollection)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBruker(files, usedColors, {
+    let partialResult: Output = await readBruker(fileCollection, usedColors, {
       ...brukerParsingOptions,
     });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
   }
 
-  const residualFiles = hasOthers(files)
-    ? files.filter(
-        (file: PartialFile) =>
-          FILES_TYPES[getFileExtension(file.name).toUpperCase()],
+  const residualFiles = hasOthers(fileCollection)
+    ? fileCollection.files.filter(
+        (file) => FILES_TYPES[getFileExtension(file.name).toUpperCase()],
       )
-    : ([] as PartialFileList);
+    : ([] as FileCollectionItem[]);
 
   for (let file of residualFiles) {
     const { spectra = [], molecules = [] } = await process(
@@ -65,7 +76,7 @@ export async function read(
 }
 
 async function process(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: Partial<Options>,
 ): Promise<Output> {
@@ -93,7 +104,7 @@ async function process(
 }
 
 async function processJSON(
-  file: PartialFile,
+  file: FileCollectionItem,
   usedColors: UsedColors,
   options: Partial<Options>,
 ) {
