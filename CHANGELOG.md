@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.2...v0.3.0) (2022-10-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* use filecollection (#15)
+
+### Features
+
+* use filecollection ([#15](https://www.github.com/cheminfo/nmr-load-save/issues/15)) ([78b8afa](https://www.github.com/cheminfo/nmr-load-save/commit/78b8afafc50bebb190f2c29aee94e1655fe8e7b8))
+
 ### [0.2.2](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.1...v0.2.2) (2022-09-27)
 
 
