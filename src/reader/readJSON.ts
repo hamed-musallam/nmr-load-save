@@ -6,7 +6,7 @@ import { formatSpectrum1D } from '../utilities/formatSpectrum1D';
 import { formatSpectrum2D } from '../utilities/formatSpectrum2D';
 
 import { UsedColors } from './UsedColors';
-import { readJcampFromURL } from './readJcamp';
+import { processJcamp, readJcampFromURL } from './readJcamp';
 
 type Text = string;
 
@@ -24,7 +24,14 @@ export async function readJSON(
   let promises = [];
 
   for (let datum of data.spectra) {
-    if (datum.source.jcampURL != null) {
+    if (datum.source?.jcamp != null) {
+      const { jcampParsingOptions } = options;
+      addJcampFromString(spectra, usedColors, {
+        jcamp: datum.source.jcamp,
+        datum,
+        jcampParsingOptions,
+      });
+    } else if (datum.source.jcampURL != null) {
       const { jcampParsingOptions } = options;
       promises.push(
         addJcampFromURL(spectra, usedColors, {
@@ -44,6 +51,22 @@ export async function readJSON(
   }
   await Promise.all(promises);
   return { ...data, ...{ spectra } };
+}
+
+function addJcampFromString(
+  spectra: any,
+  usedColors: UsedColors,
+  options: {
+    jcamp: string;
+    datum: any;
+    jcampParsingOptions?: JcampParsingOptions;
+  },
+) {
+  const { jcamp, datum, jcampParsingOptions } = options;
+  const processedSpectra = processJcamp(jcamp, usedColors, jcampParsingOptions);
+  for (const spectrum of processedSpectra.spectra) {
+    spectra.push({ ...spectrum, ...datum });
+  }
 }
 
 async function addJcampFromURL(

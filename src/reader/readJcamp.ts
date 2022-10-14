@@ -33,7 +33,7 @@ export function readJcampFromURL(
     );
 }
 
-function processJcamp(
+export function processJcamp(
   text: string,
   usedColors: UsedColors,
   options: JcampParsingOptions = {},
