@@ -61,6 +61,7 @@ async function getSpectra(
 
   if (jcampURL) {
     return readJcampFromURL(jcampURL, usedColors, {
+      name: file?.fileCollection.files[0].name,
       ...{ xy: true, noContours: true },
       ...jcampParsingOptions,
     });
@@ -71,12 +72,13 @@ async function getSpectra(
   switch (file.type) {
     case 'jcamp':
       return readJcamp(file.fileCollection.files[0], usedColors, {
+        name: file?.fileCollection.files[0].name,
         ...{ xy: true, noContours: true },
         ...jcampParsingOptions,
       });
     case 'brukerFiles':
       return readBruker(file.fileCollection, usedColors, {
-        ...{ xy: true, noContours: true, keepOriginal: true },
+        ...{ xy: true, noContours: true },
         ...brukerParsingOptions,
       });
     default:

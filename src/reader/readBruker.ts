@@ -26,7 +26,9 @@ export async function readBruker(
 
   for (let entry of entries) {
     const { dependentVariables, info, meta, source } = entry;
-    output.spectra.push({ dependentVariables, meta, info, source });
+    const { expno, name } = source;
+    const display = { name: `${name}/${expno}` };
+    output.spectra.push({ dependentVariables, meta, info, source, display });
   }
 
   return formatSpectra(output, usedColors);

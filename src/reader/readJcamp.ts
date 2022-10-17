@@ -15,7 +15,7 @@ export async function readJcamp(
   options: JcampParsingOptions = {},
 ): Promise<Output> {
   const text = await file.text();
-  return processJcamp(text, usedColors, options);
+  return processJcamp(text, usedColors, { name: file.name, ...options });
 }
 
 export function readJcampFromURL(
@@ -33,7 +33,7 @@ export function readJcampFromURL(
     );
 }
 
-function processJcamp(
+export function processJcamp(
   text: string,
   usedColors: UsedColors,
   options: JcampParsingOptions = {},
@@ -55,7 +55,13 @@ function processJcamp(
     options;
   for (let entry of entries) {
     const { dependentVariables, info, meta } = entry;
-    output.spectra.push({ dependentVariables, meta, info, source });
+    output.spectra.push({
+      dependentVariables,
+      meta,
+      info,
+      source,
+      display: { name },
+    });
   }
 
   return formatSpectra(output, usedColors);

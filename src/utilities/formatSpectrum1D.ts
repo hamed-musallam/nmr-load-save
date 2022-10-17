@@ -13,7 +13,6 @@ export function formatSpectrum1D(
 ): Spectrum1D {
   const {
     id = generateID(),
-    shiftX = 0,
     meta,
     peaks = {},
     filters = [],
@@ -21,7 +20,7 @@ export function formatSpectrum1D(
     source = {},
     dependentVariables = [],
   } = spectrumData;
-  let spectrum: any = { id, shiftX, meta, filters };
+  let spectrum: any = { id, meta, filters };
 
   spectrum.source = {
     ...{
@@ -70,13 +69,13 @@ export function formatSpectrum1D(
 
   spectrum.peaks = { ...{ values: [], options: {} }, ...peaks };
 
-  spectrum.integrals = {
-    ...{ values: [], options: { sum: 100 } },
-    ...spectrumData.integrals,
-  };
+  // spectrum.integrals = {
+  //   ...{ values: [], options: { sum: 100 } },
+  //   ...spectrumData.integrals,
+  // };
 
   spectrum.ranges = {
-    ...{ values: [], options: { sum: 100 } },
+    ...{ values: [] },
     ...spectrumData.ranges,
   };
 

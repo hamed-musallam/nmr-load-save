@@ -1,8 +1,9 @@
 import { FileCollection, FileCollectionItem } from 'filelist-utils';
+import { isAnyArray } from 'is-any-array';
 
 import type { Options } from '../types/Options/Options';
 import type { Output } from '../types/Output';
-import { FILES_TYPES, FILES_SIGNATURES } from '../utilities/files/constants';
+import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
 import { hasOthers } from '../utilities/hasOthers';
@@ -10,11 +11,10 @@ import { hasOthers } from '../utilities/hasOthers';
 import { UsedColors } from './UsedColors';
 import { readBruker } from './readBruker';
 import { readJDF } from './readJDF';
-import { readJSON } from './readJSON';
 import { readJcamp } from './readJcamp';
 import { readNMReData } from './readNMReData';
-import { readZip, readZipFile } from './readZip';
-import { isAnyArray } from 'is-any-array';
+import { readZipFile } from './readZip';
+import { readNMRium } from './readNMRium';
 
 /**
  * read nmr data based on the file extension.
@@ -97,26 +97,8 @@ async function process(
       return readNMReData(file, usedColors, options);
     case FILES_TYPES.NMRIUM:
     case FILES_TYPES.JSON:
-      return processJSON(file, usedColors, options);
+      return readNMRium(file, usedColors, options);
     default:
       throw new Error(`The extension ${extension} is not supported`);
-  }
-}
-
-async function processJSON(
-  file: FileCollectionItem,
-  usedColors: UsedColors,
-  options: Partial<Options>,
-) {
-  const buffer = await file.arrayBuffer();
-  const fileSignature = new Uint8Array(buffer)
-    .slice(0, 4)
-    .reduce((acc, byte) => (acc += byte.toString(16).padStart(2, '0')), '');
-
-  if (fileSignature === FILES_SIGNATURES.ZIP) {
-    return readZip(buffer, usedColors, options);
-  } else {
-    const decoder = new TextDecoder('utf8');
-    return readJSON(decoder.decode(buffer), usedColors);
   }
 }

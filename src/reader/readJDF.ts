@@ -14,7 +14,7 @@ export async function readJDF(
   options: Options,
 ) {
   const jdf = await file.arrayBuffer();
-  const { name = '' } = options;
+  const { name = file.name } = options;
   let output: any = { spectra: [], molecules: [] };
 
   const jeolData = fromJEOL(jdf);
@@ -58,6 +58,9 @@ export async function readJDF(
         },
       },
       meta: metadata,
+      display: {
+        name,
+      },
       source: {
         name,
         extension: 'jdf',
