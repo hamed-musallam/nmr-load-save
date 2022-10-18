@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.3.0...v0.4.0) (2022-10-17)
+
+
+### Features
+
+* refactor n expose functions ([bc1edc0](https://www.github.com/cheminfo/nmr-load-save/commit/bc1edc0f79141ed0a6aa380e18202194f2d0f744))
+
 ## [0.3.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.2.2...v0.3.0) (2022-10-04)
 
 
