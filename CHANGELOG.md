@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/cheminfo/nmr-load-save/compare/v0.4.0...v0.4.1) (2022-10-19)
+
+
+### Bug Fixes
+
+* don't handle colors ([7db7f05](https://www.github.com/cheminfo/nmr-load-save/commit/7db7f055c79b2e323754b656862de73b35238059))
+
 ## [0.4.0](https://www.github.com/cheminfo/nmr-load-save/compare/v0.3.0...v0.4.0) (2022-10-17)
 
 
