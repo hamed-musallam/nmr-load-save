@@ -6,13 +6,7 @@ import type { Data2D } from '../types/Data2D';
 import type { Options } from '../types/Options/Options';
 import { formatSpectra } from '../utilities/formatSpectra';
 
-import { UsedColors } from './UsedColors';
-
-export async function readJDF(
-  file: FileCollectionItem,
-  usedColors: UsedColors,
-  options: Options,
-) {
+export async function readJDF(file: FileCollectionItem, options: Options) {
   const jdf = await file.arrayBuffer();
   const { name = file.name } = options;
   let output: any = { spectra: [], molecules: [] };
@@ -69,7 +63,7 @@ export async function readJDF(
       ...options,
     },
   ];
-  return formatSpectra(output, usedColors);
+  return formatSpectra(output);
 }
 
 function format1D(result: any): Data1D {

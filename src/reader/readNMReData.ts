@@ -8,13 +8,11 @@ import { isSpectrum2D } from '../utilities/tools/isSpectrum2D';
 import { addRanges } from '../utilities/tools/nmredata/addRanges';
 import { addZones } from '../utilities/tools/nmredata/addZones';
 
-import { UsedColors } from './UsedColors';
 import { readBruker } from './readBruker';
 import { readJcamp, readJcampFromURL } from './readJcamp';
 
 export async function readNMReData(
   file: FileCollectionItem,
-  usedColors: UsedColors,
   options: NmredataParsingOptions = {},
 ) {
   const fileCollection = await fileCollectionFromZip(await file.arrayBuffer());
@@ -30,11 +28,7 @@ export async function readNMReData(
   };
 
   for (const data of spectra) {
-    let { spectra: internalSpectra } = await getSpectra(
-      data.source,
-      usedColors,
-      options,
-    );
+    let { spectra: internalSpectra } = await getSpectra(data.source, options);
     for (const spectrum of internalSpectra) {
       const { info } = spectrum;
 
@@ -53,14 +47,13 @@ export async function readNMReData(
 
 async function getSpectra(
   source: Source,
-  usedColors: UsedColors,
   options: NmredataParsingOptions = {},
 ) {
   const { file, jcampURL } = source;
   const { brukerParsingOptions, jcampParsingOptions } = options;
 
   if (jcampURL) {
-    return readJcampFromURL(jcampURL, usedColors, {
+    return readJcampFromURL(jcampURL, {
       name: file?.fileCollection.files[0].name,
       ...{ xy: true, noContours: true },
       ...jcampParsingOptions,
@@ -71,13 +64,13 @@ async function getSpectra(
 
   switch (file.type) {
     case 'jcamp':
-      return readJcamp(file.fileCollection.files[0], usedColors, {
+      return readJcamp(file.fileCollection.files[0], {
         name: file?.fileCollection.files[0].name,
         ...{ xy: true, noContours: true },
         ...jcampParsingOptions,
       });
     case 'brukerFiles':
-      return readBruker(file.fileCollection, usedColors, {
+      return readBruker(file.fileCollection, {
         ...{ xy: true, noContours: true },
         ...brukerParsingOptions,
       });

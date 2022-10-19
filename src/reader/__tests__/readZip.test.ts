@@ -16,7 +16,7 @@ describe('readZip', () => {
     const zipFile = fileCollection.files.filter(
       (file) => file.name === 'dataTest.zip',
     );
-    let result = await readZipFile(zipFile[0], { '1d': [], '2d': [] });
+    let result = await readZipFile(zipFile[0]);
     expect(result.spectra).toHaveLength(2);
     expect(result.molecules).toHaveLength(1);
     let spectrum0 = result.spectra[0] as Spectrum1D;

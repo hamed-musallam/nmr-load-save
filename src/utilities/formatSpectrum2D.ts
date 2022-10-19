@@ -1,13 +1,8 @@
-import { UsedColors } from '../reader/UsedColors';
 import { Spectrum2D } from '../types/Spectra/Spectrum2D';
 
 import generateID from './generateID';
-import { get2DColor } from './getColor';
 
-export function formatSpectrum2D(
-  spectrumData: any,
-  usedColors: UsedColors,
-): Spectrum2D {
+export function formatSpectrum2D(spectrumData: any): Spectrum2D {
   const {
     id = generateID(),
     meta = {},
@@ -40,7 +35,6 @@ export function formatSpectrum2D(
 
   spectrum.display = {
     name: spectrumData.display?.name ? spectrumData.display.name : generateID(),
-    ...getColor(spectrumData, usedColors),
     isPositiveVisible: true,
     isNegativeVisible: true,
     isVisible: true,
@@ -66,19 +60,4 @@ export function formatSpectrum2D(
   spectrum.zones = { ...{ values: [], options: {} }, ...zones };
 
   return spectrum;
-}
-
-function getColor(options: any, usedColors: UsedColors) {
-  let color = { positiveColor: 'red', negativeColor: 'blue' };
-  if (
-    options?.display?.negativeColor === undefined ||
-    options?.display?.positiveColor === undefined
-  ) {
-    color = get2DColor(options.info.experiment, usedColors['2d'] || []);
-  }
-
-  if (usedColors['2d']) {
-    usedColors['2d'].push(color.positiveColor);
-  }
-  return color;
 }

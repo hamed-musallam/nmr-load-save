@@ -8,13 +8,12 @@ import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
 import { hasOthers } from '../utilities/hasOthers';
 
-import { UsedColors } from './UsedColors';
 import { readBruker } from './readBruker';
 import { readJDF } from './readJDF';
 import { readJcamp } from './readJcamp';
 import { readNMReData } from './readNMReData';
-import { readZipFile } from './readZip';
 import { readNMRium } from './readNMRium';
+import { readZipFile } from './readZip';
 
 /**
  * read nmr data based on the file extension.
@@ -42,16 +41,14 @@ function isFileCollection(
 
 export async function read(
   input: FileCollection | FileCollectionItem,
-  usedColors: UsedColors = { '1d': [], '2d': [] },
   options: Partial<Options> = {},
 ): Promise<Output> {
   let result: Output = { spectra: [], molecules: [] };
-
   const fileCollection = ensureFileCollection(input);
 
   if (hasBruker(fileCollection)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBruker(fileCollection, usedColors, {
+    let partialResult: Output = await readBruker(fileCollection, {
       ...brukerParsingOptions,
     });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
@@ -64,11 +61,7 @@ export async function read(
     : ([] as FileCollectionItem[]);
 
   for (let file of residualFiles) {
-    const { spectra = [], molecules = [] } = await process(
-      file,
-      usedColors,
-      options,
-    );
+    const { spectra = [], molecules = [] } = await process(file, options);
     result.spectra.push(...spectra);
     result.molecules.push(...molecules);
   }
@@ -77,7 +70,6 @@ export async function read(
 
 async function process(
   file: FileCollectionItem,
-  usedColors: UsedColors,
   options: Partial<Options>,
 ): Promise<Output> {
   const { jcampParsingOptions } = options;
@@ -88,16 +80,16 @@ async function process(
     case FILES_TYPES.JDX:
     case FILES_TYPES.DX:
     case FILES_TYPES.JCAMP:
-      return readJcamp(file, usedColors, jcampParsingOptions);
+      return readJcamp(file, jcampParsingOptions);
     case FILES_TYPES.JDF:
-      return readJDF(file, usedColors, { name: file.name });
+      return readJDF(file, { name: file.name });
     case FILES_TYPES.ZIP:
-      return readZipFile(file, usedColors, options);
+      return readZipFile(file, options);
     case FILES_TYPES.NMREDATA:
-      return readNMReData(file, usedColors, options);
+      return readNMReData(file, options);
     case FILES_TYPES.NMRIUM:
     case FILES_TYPES.JSON:
-      return readNMRium(file, usedColors, options);
+      return readNMRium(file, options);
     default:
       throw new Error(`The extension ${extension} is not supported`);
   }

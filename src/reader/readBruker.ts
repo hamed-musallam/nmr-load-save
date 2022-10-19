@@ -5,11 +5,8 @@ import { BrukerParsingOptions } from '../types/Options/BrukerParsingOptions';
 import { Output } from '../types/Output';
 import { formatSpectra } from '../utilities/formatSpectra';
 
-import { UsedColors } from './UsedColors';
-
 export async function readBruker(
   files: FileCollection,
-  usedColors: UsedColors,
   options: BrukerParsingOptions = {},
 ): Promise<Output> {
   let output: any = { spectra: [], molecules: [] };
@@ -31,5 +28,5 @@ export async function readBruker(
     output.spectra.push({ dependentVariables, meta, info, source, display });
   }
 
-  return formatSpectra(output, usedColors);
+  return formatSpectra(output);
 }

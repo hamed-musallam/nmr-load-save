@@ -5,12 +5,10 @@ import type { Output } from '../types/Output';
 import { formatSpectrum1D } from '../utilities/formatSpectrum1D';
 import { formatSpectrum2D } from '../utilities/formatSpectrum2D';
 
-import { UsedColors } from './UsedColors';
 import { processJcamp, readJcampFromURL } from './readJcamp';
 
 export async function readNMRiumObject(
   nmriumData: object,
-  usedColors: UsedColors,
   options: Options = {},
 ): Promise<Output> {
   const output: Output = { spectra: [], molecules: [] };
@@ -22,18 +20,14 @@ export async function readNMRiumObject(
     if (datum.source.jcampURL != null) {
       const { jcampParsingOptions } = options;
       promises.push(
-        addJcampFromURL(output, usedColors, {
+        addJcampFromURL(output, {
           jcampURL: datum.source.jcampURL,
           jcampParsingOptions,
         }),
       );
     } else if (datum.source.jcamp) {
       const { jcampParsingOptions } = options;
-      const result = processJcamp(
-        datum.source.jcamp,
-        usedColors,
-        jcampParsingOptions,
-      );
+      const result = processJcamp(datum.source.jcamp, jcampParsingOptions);
 
       result.spectra[0] = { ...result.spectra[0], ...datum };
       appendData(output, result);
@@ -41,9 +35,9 @@ export async function readNMRiumObject(
       const { dimension } = datum.info;
       output.molecules.push(...(data.molecules || []));
       if (dimension === 1) {
-        spectra.push(formatSpectrum1D(datum, usedColors));
+        spectra.push(formatSpectrum1D(datum));
       } else if (dimension === 2) {
-        spectra.push(formatSpectrum2D(datum, usedColors));
+        spectra.push(formatSpectrum2D(datum));
       }
     }
   }
@@ -53,18 +47,13 @@ export async function readNMRiumObject(
 
 async function addJcampFromURL(
   output: Output,
-  usedColors: UsedColors,
   options: {
     jcampURL: string;
     jcampParsingOptions?: JcampParsingOptions;
   },
 ) {
   const { jcampURL, jcampParsingOptions } = options;
-  const result = await readJcampFromURL(
-    jcampURL,
-    usedColors,
-    jcampParsingOptions,
-  );
+  const result = await readJcampFromURL(jcampURL, jcampParsingOptions);
   return appendData(output, result);
 }
 

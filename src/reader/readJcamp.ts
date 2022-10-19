@@ -7,37 +7,29 @@ import { Output } from '../types/Output';
 import { formatSpectra } from '../utilities/formatSpectra';
 import generateID from '../utilities/generateID';
 
-import { UsedColors } from './UsedColors';
-
 export async function readJcamp(
   file: FileCollectionItem,
-  usedColors: UsedColors,
   options: JcampParsingOptions = {},
 ): Promise<Output> {
   const text = await file.text();
-  return processJcamp(text, usedColors, { name: file.name, ...options });
+  return processJcamp(text, { name: file.name, ...options });
 }
 
 export function readJcampFromURL(
   jcampURL: string,
-  usedColors: UsedColors,
   options: JcampParsingOptions = {},
 ): Promise<Output> {
   return fetch(jcampURL)
     .then((response) => response.text())
     .then((jcamp) =>
-      processJcamp(jcamp, usedColors, {
+      processJcamp(jcamp, {
         ...{ source: { jcampURL } },
         ...options,
       }),
     );
 }
 
-export function processJcamp(
-  text: string,
-  usedColors: UsedColors,
-  options: JcampParsingOptions = {},
-) {
+export function processJcamp(text: string, options: JcampParsingOptions = {}) {
   let output: any = { spectra: [], molecules: [] };
 
   let entries = fromJCAMP(text, {
@@ -64,5 +56,5 @@ export function processJcamp(
     });
   }
 
-  return formatSpectra(output, usedColors);
+  return formatSpectra(output);
 }
