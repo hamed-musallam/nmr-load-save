@@ -11,11 +11,10 @@ export async function readNMRiumObject(
   nmriumData: object,
   options: Options = {},
 ): Promise<Output> {
-  const output: Output = { spectra: [], molecules: [] };
   const data = migrate(nmriumData);
+  const output: Output = { ...data, spectra: [] };
   const spectra = output.spectra;
   let promises = [];
-
   for (let datum of data.spectra) {
     if (datum.source.jcampURL != null) {
       const { jcampParsingOptions } = options;
@@ -33,7 +32,6 @@ export async function readNMRiumObject(
       appendData(output, result);
     } else {
       const { dimension } = datum.info;
-      output.molecules.push(...(data.molecules || []));
       if (dimension === 1) {
         spectra.push(formatSpectrum1D(datum));
       } else if (dimension === 2) {
