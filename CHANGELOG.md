@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/cheminfo/nmr-load-save/compare/v0.4.1...v0.4.2) (2022-10-20)
+
+
+### Bug Fixes
+
+* readNMRiumObject ([22e544c](https://github.com/cheminfo/nmr-load-save/commit/22e544c578ff462a674243718c8dfcc0958b9024))
+* update dependencies ([76b40a0](https://github.com/cheminfo/nmr-load-save/commit/76b40a05934db3013654993062d90c33dc8a7f7f))
+
 ### [0.4.1](https://www.github.com/cheminfo/nmr-load-save/compare/v0.4.0...v0.4.1) (2022-10-19)
 
 
