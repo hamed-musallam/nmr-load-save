@@ -1,8 +1,8 @@
 import { fileCollectionFromZip, FileCollectionItem } from 'filelist-utils';
 import { nmrRecordToJSON, getSDF } from 'nmredata';
 
+import { NmriumLikeObject } from '../types/NmriumLikeObject';
 import { NmredataParsingOptions } from '../types/Options/NmredataParsingOptions';
-import { Output } from '../types/Output';
 import { Source } from '../types/Source';
 import { isSpectrum2D } from '../utilities/tools/isSpectrum2D';
 import { addRanges } from '../utilities/tools/nmredata/addRanges';
@@ -22,7 +22,7 @@ export async function readNMReData(
 
   let { spectra, molecules = [] } = jsonData;
 
-  let nmrium: Output = {
+  let nmrium: NmriumLikeObject = {
     spectra: [],
     molecules,
   };

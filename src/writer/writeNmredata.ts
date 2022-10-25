@@ -2,7 +2,7 @@
 // import { getGroupedDiastereotopicAtomIDs } from 'openchemlib-utils';
 // import { Molecule as OCLMolecule } from 'openchemlib/full';
 
-// import { Output as State } from '../reader/Output';
+// import { NmriumLikeObject as State } from '../reader/NmriumLikeObject';
 // import { Spectra } from '../types/Spectra/Spectra';
 // import { ByDiaID } from '../types/utilities/writeNmreData/ByDiaID';
 // import generateID from '../utilities/generateID';

@@ -2,15 +2,15 @@ import fetch from 'cross-fetch';
 import { FileCollectionItem } from 'filelist-utils';
 import { fromJCAMP } from 'nmr-parser';
 
+import { NmriumLikeObject } from '../types/NmriumLikeObject';
 import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
-import { Output } from '../types/Output';
 import { formatSpectra } from '../utilities/formatSpectra';
 import generateID from '../utilities/generateID';
 
 export async function readJcamp(
   file: FileCollectionItem,
   options: JcampParsingOptions = {},
-): Promise<Output> {
+): Promise<NmriumLikeObject> {
   const text = await file.text();
   return processJcamp(text, { name: file.name, ...options });
 }
@@ -18,7 +18,7 @@ export async function readJcamp(
 export function readJcampFromURL(
   jcampURL: string,
   options: JcampParsingOptions = {},
-): Promise<Output> {
+): Promise<NmriumLikeObject> {
   return fetch(jcampURL)
     .then((response) => response.text())
     .then((jcamp) =>

@@ -1,14 +1,14 @@
 import { FileCollection } from 'filelist-utils';
 import { fromBruker } from 'nmr-parser';
 
+import { NmriumLikeObject } from '../types/NmriumLikeObject';
 import { BrukerParsingOptions } from '../types/Options/BrukerParsingOptions';
-import { Output } from '../types/Output';
 import { formatSpectra } from '../utilities/formatSpectra';
 
 export async function readBruker(
   files: FileCollection,
   options: BrukerParsingOptions = {},
-): Promise<Output> {
+): Promise<NmriumLikeObject> {
   let output: any = { spectra: [], molecules: [] };
 
   const entries = await fromBruker(files, {

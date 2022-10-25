@@ -1,8 +1,8 @@
 import { FileCollection, FileCollectionItem } from 'filelist-utils';
 import { isAnyArray } from 'is-any-array';
 
+import type { NmriumLikeObject } from '../types/NmriumLikeObject';
 import type { Options } from '../types/Options/Options';
-import type { Output } from '../types/Output';
 import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
@@ -42,13 +42,13 @@ function isFileCollection(
 export async function read(
   input: FileCollection | FileCollectionItem,
   options: Partial<Options> = {},
-): Promise<Output> {
-  let result: Output = { spectra: [], molecules: [] };
+): Promise<NmriumLikeObject> {
+  let result: NmriumLikeObject = { spectra: [], molecules: [] };
   const fileCollection = ensureFileCollection(input);
 
   if (hasBruker(fileCollection)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBruker(fileCollection, {
+    let partialResult: NmriumLikeObject = await readBruker(fileCollection, {
       ...brukerParsingOptions,
     });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
@@ -71,7 +71,7 @@ export async function read(
 async function process(
   file: FileCollectionItem,
   options: Partial<Options>,
-): Promise<Output> {
+): Promise<NmriumLikeObject> {
   const { jcampParsingOptions } = options;
   const extension = getFileExtension(file.name);
   switch (extension) {

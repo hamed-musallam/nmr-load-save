@@ -1,4 +1,4 @@
-import { Output } from '../types/Output';
+import { NmriumLikeObject } from '../types/NmriumLikeObject';
 
 import { formatSpectrum1D } from './formatSpectrum1D';
 import { formatSpectrum2D } from './formatSpectrum2D';
@@ -6,7 +6,7 @@ import { formatSpectrum2D } from './formatSpectrum2D';
 const BI_DIMENSIONAL = 2;
 const MONO_DIMENSIONAL = 1;
 
-export function formatSpectra(input: any): Output {
+export function formatSpectra(input: any): NmriumLikeObject {
   const { spectra: inputSpectra = [], molecules } = input;
   let spectra = [];
   for (let spectrum of inputSpectra) {
