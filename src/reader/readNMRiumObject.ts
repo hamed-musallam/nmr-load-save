@@ -1,19 +1,18 @@
 import { migrate } from '../migration/MigrationManager';
-import { Data1D } from '../types/Data1D';
-import { Data2D } from '../types/Data2D';
 import type { NmriumLikeObject } from '../types/NmriumLikeObject';
-import type { Options } from '../types/Options/Options';
+import type { ParsingOptions } from '../types/Options/ParsingOptions';
 import { Spectrum1D } from '../types/Spectra/Spectrum1D';
 import { Spectrum2D } from '../types/Spectra/Spectrum2D';
 import { formatSpectrum1D } from '../utilities/formatSpectrum1D';
 import { formatSpectrum2D } from '../utilities/formatSpectrum2D';
+import generateID from '../utilities/generateID';
 import { getSourceCache } from '../utilities/getSourceCache';
 
 import { processJcamp } from './readJcamp';
 
 export async function readNMRiumObject(
   nmriumData: object,
-  options: Options = {},
+  options: ParsingOptions = {},
 ): Promise<NmriumLikeObject> {
   const data = migrate(nmriumData);
   const nmriumLikeObject: NmriumLikeObject = { ...data, spectra: [] };
@@ -25,7 +24,11 @@ export async function readNMRiumObject(
     if (datum.source.jcampURL != null) {
       const { jcampURL, jcampSpectrumIndex = 0 } = datum.source;
       const { spectra } = sourceCache[jcampURL];
-      mergeData(nmriumLikeObject, datum, spectra[jcampSpectrumIndex]);
+      mergeData(
+        nmriumLikeObject,
+        datum,
+        makeACopyWithNewID(spectra[jcampSpectrumIndex]),
+      );
     } else if (datum.source.jcamp) {
       const { jcampParsingOptions } = options;
       const { jcampSpectrumIndex = 0 } = datum.source;
@@ -73,22 +76,26 @@ function mergeData(
    */
   incomeSpectra: Spectrum1D | Spectrum2D,
 ) {
-  if ('ranges' in currentSpectra) {
-    let data = incomeSpectra.data as Data1D;
+  if ('ranges' in incomeSpectra) {
+    let data = incomeSpectra.data;
     nmriumLikeObject.spectra.push({
-      ...(incomeSpectra as Spectrum1D),
-      ...currentSpectra,
+      ...incomeSpectra,
+      ...(currentSpectra as Spectrum1D),
       data,
     });
-  } else if ('zones' in currentSpectra) {
-    let data = incomeSpectra.data as Data2D;
+  } else if ('zones' in incomeSpectra) {
+    let data = incomeSpectra.data;
     nmriumLikeObject.spectra.push({
-      ...(incomeSpectra as Spectrum2D),
-      ...currentSpectra,
+      ...incomeSpectra,
+      ...(currentSpectra as Spectrum2D),
       data,
     });
   } else {
     nmriumLikeObject.spectra.push(incomeSpectra);
   }
   return nmriumLikeObject;
+}
+
+function makeACopyWithNewID(spectrum: Spectrum1D | Spectrum2D) {
+  return { ...spectrum, id: generateID() };
 }
