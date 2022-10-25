@@ -1,3 +1,5 @@
+import merge from 'deepmerge';
+
 import { migrate } from '../migration/MigrationManager';
 import type { NmriumLikeObject } from '../types/NmriumLikeObject';
 import type { ParsingOptions } from '../types/Options/ParsingOptions';
@@ -76,18 +78,20 @@ function mergeData(
    */
   incomeSpectra: Spectrum1D | Spectrum2D,
 ) {
+  const { data: currentData, ...resCurrent } = currentSpectra;
+
   if ('ranges' in incomeSpectra) {
-    let data = incomeSpectra.data;
+    const { data, ...resIncome } = incomeSpectra;
+    const partialSpectrum = merge(resIncome, resCurrent as Spectrum1D);
     nmriumLikeObject.spectra.push({
-      ...incomeSpectra,
-      ...(currentSpectra as Spectrum1D),
+      ...partialSpectrum,
       data,
     });
   } else if ('zones' in incomeSpectra) {
-    let data = incomeSpectra.data;
+    const { data, ...resIncome } = incomeSpectra;
+    const partialSpectrum = merge(resIncome, resCurrent as Spectrum2D);
     nmriumLikeObject.spectra.push({
-      ...incomeSpectra,
-      ...(currentSpectra as Spectrum2D),
+      ...partialSpectrum,
       data,
     });
   } else {
