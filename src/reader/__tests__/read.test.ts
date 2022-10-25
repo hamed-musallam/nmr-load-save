@@ -1,7 +1,6 @@
 import { readdir, stat, readFile } from 'fs/promises';
 import { join } from 'path';
 
-
 import {
   getData as getBrukerData,
   getFile as getBrukerFile,
