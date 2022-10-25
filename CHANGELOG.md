@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.4](https://github.com/cheminfo/nmr-load-save/compare/v0.4.3...v0.4.4) (2022-10-25)
+
+
+### Bug Fixes
+
+* don't overwrite name from object or use title ([e9c4522](https://github.com/cheminfo/nmr-load-save/commit/e9c45229afca4dc0e1f5e89e127db20216119337))
+* ensure differents id when use cache ([7a29ae0](https://github.com/cheminfo/nmr-load-save/commit/7a29ae05bfaa8c2523081c0958e22987d70e00b6))
+
 ## [0.4.3](https://github.com/cheminfo/nmr-load-save/compare/v0.4.2...v0.4.3) (2022-10-25)
 
 
