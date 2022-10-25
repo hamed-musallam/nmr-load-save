@@ -1,6 +1,6 @@
 import { FileCollectionItem } from 'filelist-utils';
-import { Options } from 'nmr-parser';
 
+import { ParsingOptions } from '../types/Options/ParsingOptions';
 import { FILES_SIGNATURES } from '../utilities/files/constants';
 
 import { readNMRiumObject } from './readNMRiumObject';
@@ -8,7 +8,7 @@ import { readZip } from './readZip';
 
 export async function readNMRium(
   file: FileCollectionItem,
-  options: Partial<Options>,
+  options: Partial<ParsingOptions>,
 ) {
   const buffer = await file.arrayBuffer();
   const fileSignature = new Uint8Array(buffer)

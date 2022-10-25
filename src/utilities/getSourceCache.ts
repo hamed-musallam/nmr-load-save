@@ -1,11 +1,9 @@
 import { readJcampFromURL } from '../reader/readJcamp';
 import { NmriumLikeObject } from '../types/NmriumLikeObject';
-import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
+import { ParsingOptions } from '../types/Options/ParsingOptions';
 
-export async function getSourceCache(
-  data: any,
-  jcampParsingOptions: JcampParsingOptions = {},
-) {
+export async function getSourceCache(data: any, options: ParsingOptions = {}) {
+  const { jcampParsingOptions } = options;
   const uniqueSourceURL = getUniqueSourceURL(data);
   const promises = uniqueSourceURL.map((sourceURL) =>
     readJcampFromURL(sourceURL, jcampParsingOptions),

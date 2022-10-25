@@ -3,10 +3,13 @@ import { fromJEOL } from 'nmr-parser';
 
 import type { Data1D } from '../types/Data1D';
 import type { Data2D } from '../types/Data2D';
-import type { Options } from '../types/Options/Options';
+import type { ParsingOptions } from '../types/Options/ParsingOptions';
 import { formatSpectra } from '../utilities/formatSpectra';
 
-export async function readJDF(file: FileCollectionItem, options: Options) {
+export async function readJDF(
+  file: FileCollectionItem,
+  options: ParsingOptions,
+) {
   const jdf = await file.arrayBuffer();
   const { name = file.name } = options;
   let output: any = { spectra: [], molecules: [] };

@@ -41,12 +41,10 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
     },
     ...options,
   });
-
-  const { name = `jcamp${generateID()}` } = options;
-  const { source = { file: { name, extension: 'jdx', binary: text } } } =
-    options;
-  for (let entry of entries) {
+  const { source = { file: { extension: 'jdx', binary: text } } } = options;
+  for (const entry of entries) {
     const { dependentVariables, info, meta } = entry;
+    const { name = info.title || `jcamp_${generateID()}` } = options;
     output.spectra.push({
       dependentVariables,
       meta,

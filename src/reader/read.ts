@@ -2,7 +2,7 @@ import { FileCollection, FileCollectionItem } from 'filelist-utils';
 import { isAnyArray } from 'is-any-array';
 
 import type { NmriumLikeObject } from '../types/NmriumLikeObject';
-import type { Options } from '../types/Options/Options';
+import type { ParsingOptions } from '../types/Options/ParsingOptions';
 import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
@@ -41,7 +41,7 @@ function isFileCollection(
 
 export async function read(
   input: FileCollection | FileCollectionItem,
-  options: Partial<Options> = {},
+  options: Partial<ParsingOptions> = {},
 ): Promise<NmriumLikeObject> {
   let result: NmriumLikeObject = { spectra: [], molecules: [] };
   const fileCollection = ensureFileCollection(input);
@@ -70,7 +70,7 @@ export async function read(
 
 async function process(
   file: FileCollectionItem,
-  options: Partial<Options>,
+  options: Partial<ParsingOptions>,
 ): Promise<NmriumLikeObject> {
   const { jcampParsingOptions } = options;
   const extension = getFileExtension(file.name);

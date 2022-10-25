@@ -5,7 +5,7 @@ import {
 } from 'filelist-utils';
 
 import type { NmriumLikeObject } from '../types/NmriumLikeObject';
-import type { Options } from '../types/Options/Options';
+import type { ParsingOptions } from '../types/Options/ParsingOptions';
 import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
@@ -16,12 +16,15 @@ import { readBruker } from './readBruker';
 
 export async function readZipFile(
   file: FileCollectionItem,
-  options: Options = {},
+  options: ParsingOptions = {},
 ): Promise<NmriumLikeObject> {
   return readZip(await file.arrayBuffer(), options);
 }
 
-export async function readZip(zipBuffer: ArrayBuffer, options: Options = {}) {
+export async function readZip(
+  zipBuffer: ArrayBuffer,
+  options: ParsingOptions = {},
+) {
   const fileCollection = await fileCollectionFromZip(zipBuffer);
   let result: NmriumLikeObject = { spectra: [], molecules: [] };
 

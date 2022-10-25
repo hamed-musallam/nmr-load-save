@@ -1,8 +1,6 @@
 import { readdir, stat, readFile } from 'fs/promises';
 import { join } from 'path';
 
-import { rest } from 'msw';
-import { setupServer } from 'msw/node';
 
 import {
   getData as getBrukerData,
@@ -15,6 +13,8 @@ import {
 } from 'filelist-utils';
 import { getFile as getJcampFile } from 'jcamp-data-test';
 import { getFile as getJeolFile } from 'jeol-data-test';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
 import { getFile as getNMReDataFileList } from 'nmredata-data-test';
 
 import { Spectrum1D } from '../../types/Spectra/Spectrum1D';
