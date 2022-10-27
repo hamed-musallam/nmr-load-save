@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.6](https://github.com/cheminfo/nmr-load-save/compare/v0.4.5...v0.4.6) (2022-10-27)
+
+
+### Bug Fixes
+
+* info merge n filter out startwith dot files ([03122f9](https://github.com/cheminfo/nmr-load-save/commit/03122f9841ee6479c9e7f588f9118b2f13f7ebf1))
+
 ## [0.4.5](https://github.com/cheminfo/nmr-load-save/compare/v0.4.4...v0.4.5) (2022-10-25)
 
 
