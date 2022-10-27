@@ -30,6 +30,7 @@ function ensureFileCollection<T extends FileCollectionItem | FileCollection>(
       'For a set of fileCollectionItems pass a FileCollection instance',
     );
   }
+
   return isFileCollection(input) ? input : new FileCollection([input]);
 }
 

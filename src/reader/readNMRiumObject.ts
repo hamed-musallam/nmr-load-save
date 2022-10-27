@@ -1,4 +1,4 @@
-import merge from 'deepmerge';
+import merge from 'lodash.merge';
 
 import { migrate } from '../migration/MigrationManager';
 import type { NmriumLikeObject } from '../types/NmriumLikeObject';
@@ -26,10 +26,8 @@ export async function readNMRiumObject(
     if (datum.source.jcampURL != null) {
       const { jcampURL, jcampSpectrumIndex = 0 } = datum.source;
       const { spectra } = sourceCache[jcampURL];
-      mergeData(
-        nmriumLikeObject,
-        datum,
-        makeACopyWithNewID(spectra[jcampSpectrumIndex]),
+      nmriumLikeObject.spectra.push(
+        mergeData(datum, makeACopyWithNewID(spectra[jcampSpectrumIndex])),
       );
     } else if (datum.source.jcamp) {
       const { jcampParsingOptions } = options;
@@ -38,10 +36,8 @@ export async function readNMRiumObject(
         datum.source.jcamp,
         jcampParsingOptions,
       );
-      mergeData(
-        nmriumLikeObject,
-        datum,
-        sourceParsed.spectra[jcampSpectrumIndex],
+      nmriumLikeObject.spectra.push(
+        mergeData(datum, sourceParsed.spectra[jcampSpectrumIndex]),
       );
     } else {
       const { dimension } = datum.info;
@@ -66,10 +62,6 @@ export async function readNMRiumObject(
  */
 function mergeData(
   /**
-   * global result
-   */
-  nmriumLikeObject: NmriumLikeObject,
-  /**
    * spectrum inside of the income nmrium object
    */
   currentSpectra: Spectrum1D | Spectrum2D,
@@ -83,21 +75,20 @@ function mergeData(
   if ('ranges' in incomeSpectra) {
     const { data, ...resIncome } = incomeSpectra;
     const partialSpectrum = merge(resIncome, resCurrent as Spectrum1D);
-    nmriumLikeObject.spectra.push({
+    return {
       ...partialSpectrum,
       data,
-    });
+    };
   } else if ('zones' in incomeSpectra) {
     const { data, ...resIncome } = incomeSpectra;
     const partialSpectrum = merge(resIncome, resCurrent as Spectrum2D);
-    nmriumLikeObject.spectra.push({
+    return {
       ...partialSpectrum,
       data,
-    });
+    };
   } else {
-    nmriumLikeObject.spectra.push(incomeSpectra);
+    return incomeSpectra;
   }
-  return nmriumLikeObject;
 }
 
 function makeACopyWithNewID(spectrum: Spectrum1D | Spectrum2D) {
