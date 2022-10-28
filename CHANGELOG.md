@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.7](https://github.com/cheminfo/nmr-load-save/compare/v0.4.6...v0.4.7) (2022-10-28)
+
+
+### Bug Fixes
+
+* pass options to readNmriumObject ([#36](https://github.com/cheminfo/nmr-load-save/issues/36)) ([3311113](https://github.com/cheminfo/nmr-load-save/commit/3311113a1c0c30b115d12ae7cad8e96a53d18a71)), closes [#35](https://github.com/cheminfo/nmr-load-save/issues/35)
+
 ## [0.4.6](https://github.com/cheminfo/nmr-load-save/compare/v0.4.5...v0.4.6) (2022-10-27)
 
 
