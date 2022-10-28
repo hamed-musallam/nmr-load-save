@@ -19,6 +19,7 @@ import { getFile as getNMReDataFileList } from 'nmredata-data-test';
 import { Spectrum1D } from '../../types/Spectra/Spectrum1D';
 import { Spectrum2D } from '../../types/Spectra/Spectrum2D';
 import { read } from '../read';
+import { Data1D } from '../../types/Data1D';
 
 const server = setupServer(
   rest.get('http://localhost/*', async (req, res, ctx) => {
@@ -115,8 +116,31 @@ describe('read by extension', () => {
   it('nmrium fetch jcampURL', async () => {
     const path = join(__dirname, './nmriumDataTest');
     const files = await fileCollectionFromPath(path);
-    const data = await read(files);
-    expect(data.spectra).toHaveLength(4);
+    const result = await read(files);
+    expect(result.spectra).toHaveLength(4);
+    expect(result.molecules).toHaveLength(2);
+    let spectrum0 = result.spectra[0] as Spectrum1D;
+    expect(spectrum0.data.x).toHaveLength(16384);
+    expect(spectrum0.data.re).toHaveLength(16384);
+    expect(spectrum0.info.isFid).toBe(true);
+    expect(spectrum0.info.solvent).toBe('CDCl3');
+    let spectrum1 = result.spectra[1] as Spectrum1D;
+    expect(spectrum1.data.x).toHaveLength(8192);
+    expect(spectrum1.info.solvent).toBe('Acetone');
+  });
+  it('compressed nmrium file', async () => {
+    const path = join(__dirname, './nmriumFiles');
+    const files = await fileCollectionFromPath(path);
+    const result = await read(files);
+    const { spectra, molecules } = result;
+    expect(spectra).toHaveLength(1);
+    expect(molecules).toHaveLength(1);
+    expect((spectra[0].data as Data1D).im).toBeNull();
+    expect((spectra[0].data as Data1D).re).toHaveLength(4096);
+    expect(result.spectra[0].info).toHaveProperty('nucleus');
+
+    const info = result.spectra[0].info;
+    expect(info.nucleus).toBe('1H');
   });
 });
 
