@@ -18,7 +18,6 @@ export async function readNMRiumObject(
 ): Promise<NmriumLikeObject> {
   const data = migrate(nmriumData);
   const nmriumLikeObject: NmriumLikeObject = { ...data, spectra: [] };
-
   const sourceCache = await getSourceCache(data, options);
 
   const spectra = nmriumLikeObject.spectra;
@@ -71,7 +70,6 @@ function mergeData(
   incomeSpectra: Spectrum1D | Spectrum2D,
 ) {
   const { data: currentData, ...resCurrent } = currentSpectra;
-
   if ('ranges' in incomeSpectra) {
     const { data, ...resIncome } = incomeSpectra;
     const partialSpectrum = merge(resIncome, resCurrent as Spectrum1D);

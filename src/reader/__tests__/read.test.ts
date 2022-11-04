@@ -16,10 +16,10 @@ import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { getFile as getNMReDataFileList } from 'nmredata-data-test';
 
+import { Data1D } from '../../types/Data1D';
 import { Spectrum1D } from '../../types/Spectra/Spectrum1D';
 import { Spectrum2D } from '../../types/Spectra/Spectrum2D';
 import { read } from '../read';
-import { Data1D } from '../../types/Data1D';
 
 const server = setupServer(
   rest.get('http://localhost/*', async (req, res, ctx) => {

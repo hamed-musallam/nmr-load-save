@@ -59,5 +59,5 @@ export function formatSpectrum2D(spectrumData: any): Spectrum2D {
 
   spectrum.zones = { ...{ values: [], options: {} }, ...zones };
 
-  return spectrum;
+  return { ...spectrumData, ...spectrum };
 }
