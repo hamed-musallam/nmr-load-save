@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.8](https://github.com/cheminfo/nmr-load-save/compare/v0.4.7...v0.4.8) (2022-11-04)
+
+
+### Bug Fixes
+
+* keep all data from a nmrium object ([#41](https://github.com/cheminfo/nmr-load-save/issues/41)) ([dcaf99f](https://github.com/cheminfo/nmr-load-save/commit/dcaf99fe745e1b31078a0d23c8710d1e40a7f6b6))
+
 ## [0.4.7](https://github.com/cheminfo/nmr-load-save/compare/v0.4.6...v0.4.7) (2022-10-28)
 
 
