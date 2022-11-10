@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.9](https://github.com/cheminfo/nmr-load-save/compare/v0.4.8...v0.4.9) (2022-11-10)
+
+
+### Bug Fixes
+
+* keep out internal variables in formatSpectra ([#45](https://github.com/cheminfo/nmr-load-save/issues/45)) ([81ac1b4](https://github.com/cheminfo/nmr-load-save/commit/81ac1b4620766eab25e5b059dcb13ed47fadcecc))
+
 ## [0.4.8](https://github.com/cheminfo/nmr-load-save/compare/v0.4.7...v0.4.8) (2022-11-04)
 
 
