@@ -15,6 +15,7 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
     source = {},
     integrals = {},
     dependentVariables = [],
+    ...residualSpectrumData
   } = spectrumData;
   let spectrum: any = { id, meta, filters };
 
@@ -70,5 +71,5 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
     ...spectrumData.ranges,
   };
 
-  return { ...spectrumData, ...spectrum };
+  return { ...residualSpectrumData, ...spectrum };
 }

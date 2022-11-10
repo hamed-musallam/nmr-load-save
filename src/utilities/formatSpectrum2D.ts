@@ -11,6 +11,7 @@ export function formatSpectrum2D(spectrumData: any): Spectrum2D {
     source = {},
     filters = [],
     zones = [],
+    ...residualSpectrumData
   } = spectrumData;
 
   const spectrum: any = { id, meta, filters };
@@ -59,5 +60,5 @@ export function formatSpectrum2D(spectrumData: any): Spectrum2D {
 
   spectrum.zones = { ...{ values: [], options: {} }, ...zones };
 
-  return { ...spectrumData, ...spectrum };
+  return { ...residualSpectrumData, ...spectrum };
 }
