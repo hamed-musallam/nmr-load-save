@@ -40,15 +40,15 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
-    "@types/jest": "^29.2.0",
-    "@types/node": "^18.11.3",
+    "@types/jest": "^29.2.3",
+    "@types/node": "^18.11.9",
     "bruker-data-test": "^0.4.0",
-    "eslint": "^8.25.0",
-    "eslint-config-cheminfo-typescript": "^11.1.0",
+    "eslint": "^8.27.0",
+    "eslint-config-cheminfo-typescript": "^11.2.2",
     "jcamp-data-test": "^0.4.0",
     "jeol-data-test": "^0.5.0",
-    "jest": "^29.2.1",
-    "msw": "^0.47.4",
+    "jest": "^29.3.1",
+    "msw": "^0.48.3",
     "nmredata-data-test": "^0.4.0",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
@@ -58,16 +58,19 @@
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@types/lodash.merge": "^4.6.7",
+    "brukerconverter": "6.0.0",
     "cheminfo-types": "^1.4.0",
     "cross-fetch": "^3.1.5",
-    "filelist-utils": "^1.1.1",
+    "filelist-utils": "^1.2.0",
+    "gyromagnetic-ratio": "^1.0.0",
     "is-any-array": "^2.0.0",
+    "jcampconverter": "^9.0.3",
+    "jeolconverter": "^1.0.1",
     "lodash.merge": "^4.6.2",
-    "ml-spectra-processing": "^11.13.0",
-    "nmr-parser": "^3.0.3",
-    "nmr-processing": "^9.2.0",
+    "ml-spectra-processing": "^11.14.0",
+    "nmr-processing": "^9.3.0",
     "nmredata": "^0.9.1",
     "openchemlib": "^8.0.1",
-    "openchemlib-utils": "^2.0.0"
+    "openchemlib-utils": "^2.1.0"
   }
 }

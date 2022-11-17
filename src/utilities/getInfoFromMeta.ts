@@ -1,0 +1,244 @@
+import { gyromagneticRatio, Nuclei } from 'gyromagnetic-ratio';
+
+import { getDigitalFilterParameters } from './getDigitalFilterParameters';
+import { getNucleusFromMetadata } from './getNucleusFromMetadata';
+import { getSpectrumType } from './getSpectrumType';
+
+export interface GetInfoFromMetaOptions {
+  subfix?: string;
+}
+
+export type Metadata = Record<string, any>;
+export type Info = Record<string, any>;
+
+export function getInfoFromMeta(
+  metaData: Metadata,
+  options: GetInfoFromMetaOptions = {},
+) {
+  const { subfix = '' } = options;
+  const info: Info = {
+    dimension: 0,
+    nucleus: [],
+    isFid: false,
+    isFt: false,
+    isComplex: false,
+  };
+  let metadataString = JSON.stringify(metaData);
+  const separator = /\r\n/.exec(metadataString) ? '\r\n' : '\n';
+
+  let { JCAMPDX: jcampdx = '', ORIGIN: origin = '' } = metaData;
+  let creator = String(jcampdx).toLowerCase() + String(origin).toLowerCase();
+
+  if (creator.includes('mestre') || creator.includes('nova')) {
+    creator = 'mnova';
+  }
+
+  if (creator === 'mnova') {
+    if (metaData.LONGDATE) {
+      info.date = metaData.LONGDATE;
+    }
+  }
+
+  info.nucleus = getNucleusFromMetadata(metaData, info, subfix);
+  info.dimension = info.nucleus.length;
+
+  maybeAdd(info, 'title', metaData.TITLE);
+  maybeAdd(info, 'solvent', metaData['.SOLVENTNAME']);
+  maybeAdd(info, 'temperature', metaData[`${subfix}TE`] || metaData['.TE']);
+  maybeAdd(info, 'type', metaData.DATATYPE);
+
+  if (info.type) {
+    let typeLowerCase = info.type[0].toUpperCase();
+    if (typeLowerCase.indexOf('FID') >= 0) {
+      info.isFid = true;
+      info.isComplex = true;
+    } else if (typeLowerCase.indexOf('SPECTRUM') >= 0) {
+      info.isFt = true;
+      info.isComplex = true;
+    }
+  }
+
+  maybeAdd(
+    info,
+    'pulseSequence',
+    metaData['.PULSESEQUENCE'] ||
+      metaData['.PULPROG'] ||
+      metaData[`${subfix}PULPROG`],
+  );
+  maybeAdd(info, 'experiment', getSpectrumType(info, metaData, { subfix }));
+
+  maybeAddNumber(info, 'originFrequency', metaData['.OBSERVEFREQUENCY']);
+  if (creator !== 'mnova' && creator !== 'mestre') {
+    const nucleus: Nuclei = info.nucleus[0];
+    const gyromagneticRatioConst = gyromagneticRatio[nucleus];
+    maybeAdd(info, 'probeName', metaData[`${subfix}PROBHD`]);
+    maybeAdd(info, 'originFrequency', metaData[`${subfix}SFO1`]);
+    maybeAdd(info, 'baseFrequency', metaData[`${subfix}BF1`]);
+    if (!('baseFrequency' in info) && 'originFrequency' in info) {
+      maybeAdd(info, 'baseFrequency', info.originFrequency);
+    }
+
+    if (!['baseFrequency', 'originFrequency'].some((e) => !info[e])) {
+      const { baseFrequency, originFrequency } = info;
+      let fieldStrength =
+        2 * Math.PI * (baseFrequency[0] / gyromagneticRatioConst) * 1e6;
+
+      let frequencyOffset = baseFrequency.map(
+        (bf: number, i: number) => (originFrequency[i] - bf) * 1e6,
+      );
+
+      maybeAdd(info, 'fieldStrength', fieldStrength);
+      maybeAdd(info, 'frequencyOffset', frequencyOffset);
+    }
+    maybeAddNumber(info, 'spectralWidth', metaData[`${subfix}SW`]);
+    maybeAddNumber(
+      info,
+      'spectralWidth',
+      metaData[`${subfix}QM_SPECTRAL_WIDTH`],
+    );
+
+    maybeAdd(info, 'numberOfPoints', metaData[`${subfix}TD`]);
+
+    const numberOfPoints = info.numberOfPoints;
+
+    maybeAdd(info, 'sampleName', metaData[`${subfix}NAME`]);
+
+    if (metaData[`${subfix}FNTYPE`] !== undefined) {
+      maybeAdd(
+        info,
+        'acquisitionMode',
+        parseInt(metaData[`${subfix}FNTYPE`], 10),
+      );
+    }
+    let varName = metaData[`${subfix}VARNAME`]
+      ? metaData[`${subfix}VARNAME`].split(',')[0]
+      : '';
+    if (varName === 'TIME') {
+      let value =
+        typeof metaData.LAST === 'string' || metaData.LAST instanceof String
+          ? metaData.LAST.replace(' ', '').split(',')[0]
+          : metaData.LAST;
+      maybeAddNumber(info, 'acquisitionTime', value);
+    }
+
+    if (!info.acquisitionTime) {
+      if (!['numberOfPoints', 'spectralWidth'].some((e) => !info[e])) {
+        const { spectralWidth, originFrequency } = info;
+        maybeAdd(
+          info,
+          'acquisitionTime',
+          Number(
+            (numberOfPoints[0] - 1) /
+              (2 * spectralWidth[0] * originFrequency[0]),
+          ),
+        );
+      }
+    }
+
+    if (metaData[`${subfix}P`]) {
+      let pulseStrength =
+        1e6 / (metaData[`${subfix}P`].split(separator)[1].split(' ')[1] * 4);
+      maybeAdd(info, 'pulseStrength90', pulseStrength);
+    }
+    if (metaData[`${subfix}D`]) {
+      let relaxationTime = metaData[`${subfix}D`]
+        .split(separator)[1]
+        .split(' ')[1];
+      maybeAddNumber(info, 'relaxationTime', relaxationTime);
+    }
+
+    maybeAddNumber(info, 'numberOfScans', metaData[`${subfix}NS`]);
+    maybeAddNumber(info, 'numberOfScans', metaData[`${subfix}QM_NSCANS`]);
+
+    let increment;
+    if (!['numberOfPoints', 'spectralWidth'].some((e) => !info[e])) {
+      const { spectralWidth, numberOfPoints } = info;
+      if (info.isFid) {
+        maybeAdd(info, 'groupDelay', metaData[`${subfix}GRPDLY`] || 0);
+        maybeAdd(info, 'DSPFVS', metaData[`${subfix}DSPFVS`]);
+        maybeAdd(info, 'DECIM', metaData[`${subfix}DECIM`]);
+
+        if (!['groupDelay', 'DSPFVS', 'DECIM'].some((e) => !info[e])) {
+          let { groupDelay, DSPFVS, DECIM } = info;
+          let digitalFilterParameters = getDigitalFilterParameters(
+            groupDelay[0],
+            DSPFVS[0],
+            DECIM[0],
+          );
+          maybeAdd(info, 'digitalFilter', digitalFilterParameters);
+        }
+
+        increment = numberOfPoints.map((nb: number) => {
+          return info.acquisitionTime[0] / (nb - 1);
+        });
+      } else {
+        increment = numberOfPoints.map((nb: number, i: number) => {
+          return spectralWidth[i] / (nb - 1);
+        });
+      }
+    }
+
+    maybeAdd(info, 'increment', increment);
+    if (metaData[`${subfix}DATE`]) {
+      info.date = new Date(
+        parseInt(metaData[`${subfix}DATE`], 10) * 1000,
+      ).toISOString();
+    }
+
+    if (!info.solvent) {
+      maybeAdd(
+        info,
+        'solvent',
+        Array.isArray(metaData[`${subfix}SOLVENT`])
+          ? metaData[`${subfix}SOLVENT`][0]
+          : metaData[`${subfix}SOLVENT`],
+      );
+    }
+  }
+
+  if (metaData.SYMBOL) {
+    let symbols = metaData.SYMBOL.split(/[, ]+/);
+    if (symbols.includes('R') && symbols.includes('I')) {
+      info.isComplex = true;
+    }
+  }
+
+  for (let key in info) {
+    if (info[key].length === 1) info[key] = info[key][0];
+  }
+
+  if (!Array.isArray(info.nucleus)) info.nucleus = [info.nucleus];
+
+  return info;
+}
+
+function maybeAddNumber(obj: Info, name: string, value: string | number) {
+  if (value === undefined) return;
+  if (typeof value === 'string') {
+    value = Number(value.replace(/\$.*/, ''));
+  }
+  maybeAdd(obj, name, value);
+}
+
+function maybeAdd(
+  obj: Info,
+  name: string,
+  value: string | number | Array<string | number>,
+) {
+  if (value === undefined) return;
+  if (Array.isArray(value)) {
+    obj[name] = value.map(cleanValue);
+  } else {
+    obj[name] = [cleanValue(value)];
+  }
+}
+
+function cleanValue(value: string | number) {
+  if (typeof value === 'string') {
+    if (value.startsWith('<') && value.endsWith('>')) {
+      value = value.substring(1, value.length - 1);
+    }
+    value = value.trim();
+  }
+  return value;
+}

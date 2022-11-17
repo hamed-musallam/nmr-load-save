@@ -1,10 +1,13 @@
 import { FileCollectionItem } from 'filelist-utils';
-import { fromJEOL } from 'nmr-parser';
+import { parseJEOL } from 'jeolconverter';
+import merge from 'lodash.merge';
+import { gyromagneticRatio, Nuclei } from 'nmr-processing';
 
 import type { Data1D } from '../types/Data1D';
 import type { Data2D } from '../types/Data2D';
 import type { ParsingOptions } from '../types/Options/ParsingOptions';
 import { formatSpectra } from '../utilities/formatSpectra';
+import { formatDependentVariable } from '../utilities/jeolFormater/formatDependentVariable';
 
 export async function readJDF(
   file: FileCollectionItem,
@@ -15,6 +18,7 @@ export async function readJDF(
   let output: any = { spectra: [], molecules: [] };
 
   const jeolData = fromJEOL(jdf);
+
   const converted = jeolData[0];
   let info = converted.description;
   let metadata = info.metadata;
@@ -28,7 +32,7 @@ export async function readJDF(
   const baseFrequency = info.baseFrequency;
   const frequencyOffset = info.frequencyOffset;
 
-  const spectralWidthClipped = converted.application.spectralWidthClipped;
+  const spectralWidthClipped = info.spectralWidthClipped[0];
   let data;
   if (converted.dependentVariables) {
     if (info.dimension === 1) {
@@ -172,4 +176,191 @@ function format2D(result: any): Data2D {
   }
 
   return data;
+}
+
+function fromJEOL(buffer: ArrayBuffer) {
+  let parsedData = parseJEOL(buffer);
+  let info = parsedData.info;
+  let headers = parsedData.headers;
+  let parameters = parsedData.parameters;
+  let paramArray = { ...parameters.paramArray };
+  delete parameters.paramArray;
+  let data = parsedData.data;
+
+  // curation of parameters
+  let newInfo: Record<string, any> = {};
+  newInfo.title = `title: ${headers.title} / comment: ${headers.comment} / author:${headers.author} / site: ${headers.site}`;
+  newInfo.nucleus = info.nucleus.map((x) => {
+    if (x === 'Proton') {
+      x = '1H';
+    }
+    if (x === 'Carbon13') {
+      x = '13C';
+    }
+    if (x === 'Nitrogen15') {
+      x = '15N';
+    }
+    return x;
+  });
+  newInfo.sampleName = info.sampleName;
+  newInfo.date = JSON.stringify(info.creationTime);
+  newInfo.author = info.author;
+  //newInfo.comment = info.comment;
+  newInfo.solvent = info.solvent;
+  newInfo.temperature = info.temperature.magnitude;
+  newInfo.probeName = info.probeName || '';
+  newInfo.fieldStrength = info.fieldStrength.magnitude;
+
+  let gyromagneticRatioConstants = newInfo.nucleus.map(
+    (nucleus: string) => gyromagneticRatio[nucleus as Nuclei],
+  );
+  newInfo.baseFrequency = gyromagneticRatioConstants.map(
+    (gmr: number) => (info.fieldStrength.magnitude * gmr) / (2 * Math.PI * 1e6),
+  );
+  newInfo.pulseSequence = info.experiment;
+
+  newInfo.temperature =
+    info.temperature.unit.toLowerCase() === 'celsius'
+      ? 273.15 + info.temperature.magnitude
+      : info.temperature.magnitude;
+
+  newInfo.digitalFilter = info.digitalFilter;
+  newInfo.pulseStrength90 = 1 / (4 * info.pulseStrength90.magnitude);
+  newInfo.numberOfScans = info.numberOfScans;
+  newInfo.relaxationTime = info.relaxationTime.magnitude;
+
+  newInfo.isComplex = info.dataSections.includes('im');
+  newInfo.isFid = info.dataUnits[0] === 'Second';
+  newInfo.isFt = info.dataUnits[0] === 'Ppm';
+
+  newInfo.dimension = info.dimension;
+
+  const dimension = newInfo.dimension;
+
+  newInfo.originFrequency = info.originFrequency
+    .map((d) => d.magnitude / 1e6)
+    .slice(0, dimension);
+  newInfo.numberOfPoints = info.dataPoints.slice(0, 1);
+  newInfo.frequencyOffset = info.frequencyOffset
+    .map((f, i) => f.magnitude * newInfo.baseFrequency[i])
+    .slice(0, dimension);
+  newInfo.acquisitionTime = info.acquisitionTime
+    .map((a) => a.magnitude)
+    .slice(0, dimension);
+  newInfo.spectralWidth = info.spectralWidth
+    .map((sw, i) => (sw.magnitude / info.originFrequency[i].magnitude) * 1e6)
+    .slice(0, dimension);
+
+  newInfo.spectralWidthClipped = info.spectralWidthClipped
+    .map((sw, i) => (sw.magnitude / newInfo.baseFrequency[i]) * 1e6)
+    .slice(0, dimension);
+
+  let dimensions = [];
+  let options: any = {};
+  let increment;
+  for (let d = 0; d < info.dimension; d++) {
+    increment = {
+      magnitude: info.acquisitionTime[d].magnitude / (info.dataPoints[d] - 1),
+      unit: 's',
+    };
+    if (info.dataUnits[d] === 'Second') {
+      options.quantityName = 'time';
+      options.originOffset = { magnitude: 0, unit: 's' };
+
+      if (d === 0) {
+        options.coordinatesOffset = {
+          magnitude: info.digitalFilter * increment.magnitude,
+          unit: 's',
+        };
+      } else {
+        options.coordinatesOffset = { magnitude: 0, unit: 's' };
+      }
+      options.reciprocal = {
+        originOffset: {
+          magnitude: info.originFrequency[d].magnitude,
+          unit: 'Hz',
+        },
+        quantityName: 'frequency',
+        coordinatesOffset: {
+          magnitude:
+            (info.frequencyOffset[d].magnitude *
+              info.originFrequency[d].magnitude) /
+            1000000,
+          unit: 'Hz',
+        },
+      };
+    } else if (info.dataUnits[d] === 'Ppm') {
+      options.quantityName = 'frequency';
+
+      let origin = info.originFrequency[d].magnitude;
+      options.originOffset = { magnitude: origin, unit: 'Hz' };
+
+      let firstPoint = info.dataOffsetStart[0];
+      let lastPoint = info.dataOffsetStop[0];
+      let dataLength = lastPoint - firstPoint + 1;
+
+      let spectralWidth = info.spectralWidthClipped[d].magnitude;
+      let incr = spectralWidth / info.dataPoints[d];
+      increment = { magnitude: incr, unit: 'Hz' };
+
+      let offset = (info.dataAxisStop[0] * origin) / 1000000;
+      options.coordinatesOffset = {
+        magnitude: offset,
+        unit: 'Hz',
+      };
+
+      // after increment is computed with whole frequency
+      // and original number of points, we recast the
+      // number of point for export
+      if (dataLength < info.dataPoints[d]) {
+        info.dataPoints[d] = dataLength;
+      }
+    }
+
+    if (d === 0) {
+      options.description = 'direct dimension';
+    } else {
+      options.description = 'indirect dimension';
+    }
+    dimensions.push({
+      label: String(headers.dataAxisTitles[d]),
+      count: Number(info.dataPoints[d]),
+      increment,
+      type: 'linear',
+      description: String(options.description) || '',
+      application: options.application || {},
+      coordinatesOffset: options.coordinatesOffset || 0,
+      originOffset: options.originOffset || 0,
+      quantityName: String(options.quantityName) || '',
+      reciprocal: options.reciprocal || {},
+      period: options.period || 0,
+      complexFFT: options.complexFFT || false,
+    });
+  }
+  let dependentVariables = [];
+  dependentVariables.push(
+    formatDependentVariable(data, 11, {
+      unit: 'none',
+      quantityName: 'relative intensity',
+      from: info.dataOffsetStart,
+      to: info.dataOffsetStop,
+    }),
+  );
+
+  let description = { ...newInfo };
+
+  delete description.paramList;
+  description.metadata = {
+    ...merge({}, headers),
+    ...merge({}, parameters),
+    ...merge({}, paramArray),
+  };
+
+  let dataStructure = {
+    timeStamp: Date.now(),
+    description,
+    dimensions,
+    dependentVariables,
+  };
+  return [dataStructure];
 }

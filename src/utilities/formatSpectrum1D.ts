@@ -12,6 +12,7 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
     peaks = {},
     filters = [],
     info = {},
+    ranges = {},
     source = {},
     integrals = {},
     dependentVariables = [],
@@ -64,6 +65,7 @@ export function formatSpectrum1D(spectrumData: any): Spectrum1D {
   spectrum.originalData = spectrum.data;
 
   spectrum.peaks = { ...{ values: [], options: {} }, ...peaks };
+  spectrum.ranges = { ...{ values: [], options: {} }, ...ranges };
   spectrum.integrals = { ...{ values: [], options: {} }, ...integrals };
 
   spectrum.ranges = {

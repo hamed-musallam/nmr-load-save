@@ -52,6 +52,19 @@ afterAll(() => {
 });
 
 describe('read by extension', () => {
+  it('jcamp with assignment', async () => {
+    const fileCollection = await fileCollectionFromPath(
+      join(__dirname, 'acd/'),
+    );
+    const { molecules, spectra } = await read(fileCollection);
+    expect(molecules).toHaveLength(1);
+    expect(spectra[0].filters[0].value).toStrictEqual({
+      ph0: 283.32727051,
+      ph1: 10.93865967,
+      absolute: false,
+    });
+    expect((spectra[0].data as Data1D).x).toHaveLength(65536);
+  });
   it('jcamp', async () => {
     let jcampData = await getJcampFile('aspirin-1h.dx');
     let result = await read(jcampData);
@@ -67,7 +80,7 @@ describe('read by extension', () => {
     expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
-    expect(spectrum.data.x).toHaveLength(16384);
+    expect(spectrum.data.x).toHaveLength(8192);
     expect(spectrum.info.solvent).toBe('CDCl3');
   });
 
@@ -77,7 +90,7 @@ describe('read by extension', () => {
     expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
-    expect(spectrum.data.x).toHaveLength(16384);
+    expect(spectrum.data.x).toHaveLength(8192);
     expect(spectrum.info.solvent).toBe('CDCl3');
   });
   it('Bruker fileList of a folder', async () => {
@@ -87,7 +100,7 @@ describe('read by extension', () => {
     expect(result.spectra).toHaveLength(1);
     const spectrum = result.spectra[0] as Spectrum1D;
     expect(spectrum.info.isFid).toBe(true);
-    expect(spectrum.data.x).toHaveLength(16384);
+    expect(spectrum.data.x).toHaveLength(8192);
     expect(spectrum.info.solvent).toBe('CDCl3');
   });
 
@@ -120,8 +133,8 @@ describe('read by extension', () => {
     expect(result.spectra).toHaveLength(4);
     expect(result.molecules).toHaveLength(2);
     let spectrum0 = result.spectra[0] as Spectrum1D;
-    expect(spectrum0.data.x).toHaveLength(16384);
-    expect(spectrum0.data.re).toHaveLength(16384);
+    expect(spectrum0.data.x).toHaveLength(8192);
+    expect(spectrum0.data.re).toHaveLength(8192);
     expect(spectrum0.info.isFid).toBe(true);
     expect(spectrum0.info.solvent).toBe('CDCl3');
     let spectrum1 = result.spectra[1] as Spectrum1D;
