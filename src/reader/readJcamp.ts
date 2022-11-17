@@ -110,6 +110,25 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
 
         if (dimension === 1) {
           const { assignments } = spectraData;
+
+          const phaseParameters = getPhaseParameters(metadata);
+          if (hasPhaseParameters(phaseParameters)) {
+            const { ph0, ph1 } = phaseParameters;
+            if (!('filters' in spectrum)) spectrum.filters = [];
+            spectrum.filters.push({
+              name: 'phaseCorrection',
+              label: 'Phase correction',
+              value: {
+                ph0,
+                ph1,
+                absolute: false,
+              },
+              id: generateID(),
+              flag: true,
+              isDeleteAllow: true,
+            });
+          }
+
           if (assignments) {
             const integrationSum = info.nucleus.includes('1H')
               ? assignments?.reduce(
@@ -126,14 +145,15 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
               }
             }
 
-            if ('.PHASE0' in metadata || child.spectra.length > 1) {
+            if (hasPhaseParameters(phaseParameters) && child.spectra.length > 1) {
+              const { ph0, ph1 } = phaseParameters;
               const { re } = reimPhaseCorrection(
                 {
                   re: child.spectra[0].data.y,
                   im: child.spectra[1].data.y,
                 },
-                (Number(metadata['.PHASE0']) * Math.PI) / 180,
-                (Number(metadata['.PHASE1']) * Math.PI) / 180,
+                (ph0 * Math.PI) / 180,
+                (ph1 * Math.PI) / 180,
               );
               y = re;
             }
@@ -177,23 +197,6 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
             }
             spectrum.ranges = { values: ranges };
           }
-          if ('.PHASE0' in metadata) {
-            const ph0 = metadata['.PHASE0'];
-            const ph1 = metadata['.PHASE1'];
-            if (!('filters' in spectrum)) spectrum.filters = [];
-            spectrum.filters.push({
-              name: 'phaseCorrection',
-              label: 'Phase correction',
-              value: {
-                ph0,
-                ph1,
-                absolute: false,
-              },
-              id: generateID(),
-              flag: true,
-              isDeleteAllow: true,
-            });
-          }
         }
 
         output.spectra.push(spectrum);
@@ -201,6 +204,23 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
     }
   }
   return formatSpectra(output);
+}
+
+interface PhaseParameters { ph0: number, ph1: number }
+function getPhaseParameters(metadata: any) {
+  const result: Partial<PhaseParameters> = { ph0: undefined, ph1: undefined }
+
+  if ('.PHASE0' in metadata) {
+    result.ph0 = parseFloat(metadata['.PHASE0']);
+    result.ph1 = parseFloat(metadata['.PHASE1']);
+  }
+
+  return result;
+}
+
+function hasPhaseParameters(phaseParameters: Partial<PhaseParameters>): phaseParameters is PhaseParameters {
+  const { ph0, ph1 } = phaseParameters;
+  return ph0 !== undefined && ph1 !== undefined;
 }
 
 interface AssignmentData {
