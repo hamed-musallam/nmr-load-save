@@ -45,14 +45,16 @@ export function formatSpectrum2D(spectrumData: any): Spectrum2D {
   };
 
   let { data = dependentVariables[0].components } = spectrumData;
-
+  console.log('data', data)
   spectrum.data = {
     ...{
-      z: [],
-      minX: 0,
-      minY: 0,
-      maxX: 0,
-      maxY: 0,
+      rr: {
+        z: [],
+        minX: 0,
+        minY: 0,
+        maxX: 0,
+        maxY: 0,
+      },
     },
     ...data,
   };
