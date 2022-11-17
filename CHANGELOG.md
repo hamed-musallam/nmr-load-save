@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/cheminfo/nmr-load-save/compare/v0.4.9...v0.5.0) (2022-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* quadrants in 2D n load assignment from JCAMP-DX
+
+### Features
+
+* quadrants in 2D n load assignment from JCAMP-DX ([19b1ceb](https://github.com/cheminfo/nmr-load-save/commit/19b1cebebfb866173743749e9a8174c6656140fd))
+
+
+### Bug Fixes
+
+* formatSpectrum2D ([9ec2cb9](https://github.com/cheminfo/nmr-load-save/commit/9ec2cb9499fc8632938185a49d26c0ee09b7fe75))
+
 ## [0.4.9](https://github.com/cheminfo/nmr-load-save/compare/v0.4.8...v0.4.9) (2022-11-10)
 
 
