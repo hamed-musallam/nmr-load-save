@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/cheminfo/nmr-load-save/compare/v0.5.1...v0.5.2) (2022-11-18)
+
+
+### Bug Fixes
+
+* improve integrationsum in jcamp-dx with assignment ([#58](https://github.com/cheminfo/nmr-load-save/issues/58)) ([6836b75](https://github.com/cheminfo/nmr-load-save/commit/6836b758fa84ef9dc30f3b1992f84903a2d87cd2))
+
 ## [0.5.1](https://github.com/cheminfo/nmr-load-save/compare/v0.5.0...v0.5.1) (2022-11-18)
 
 
