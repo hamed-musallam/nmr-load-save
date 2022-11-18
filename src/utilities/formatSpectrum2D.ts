@@ -2,31 +2,20 @@ import { Spectrum2D } from '../types/Spectra/Spectrum2D';
 
 import generateID from './generateID';
 
+const defaultMinMax = {
+  z: [],
+  minX: 0,
+  minY: 0,
+  maxX: 0,
+  maxY: 0,
+};
 const defaultSER = {
-  re: {
-    z: [],
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0,
-  },
-  im: {
-    z: [],
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0,
-  },
+  re: defaultMinMax,
+  im: defaultMinMax,
 };
 
 const defaultQuadrant = {
-  rr: {
-    z: [],
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0,
-  },
+  rr: defaultMinMax,
 };
 
 export function formatSpectrum2D(spectrumData: any): Spectrum2D {

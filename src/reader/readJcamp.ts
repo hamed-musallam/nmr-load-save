@@ -6,6 +6,7 @@ import { reimPhaseCorrection } from 'ml-spectra-processing';
 import { NMRSignal1D, xyAutoRangesPicking } from 'nmr-processing';
 import { getDiastereotopicAtomIDsFromMolfile } from 'openchemlib-utils';
 import * as OCL from 'openchemlib/core';
+import { Molecule } from 'openchemlib/core';
 
 import { NmriumLikeObject } from '../types/NmriumLikeObject';
 import { JcampParsingOptions } from '../types/Options/JcampParsingOptions';
@@ -40,6 +41,7 @@ export function readJcampFromURL(
 }
 
 interface SpectraData {
+  molecule?: Molecule;
   assignments?: AssignmentData[];
 }
 
@@ -68,12 +70,16 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
           molfile: String(meta.MOLFILE),
         });
       }
+
       if (
         dataClass.toLowerCase().includes('assignments') &&
         dataType.toLowerCase().includes('assignments')
       ) {
-        spectraData.assignments = addAssignmentObject(child, children);
+        const { molecule, assignments } = getAssignmentObject(child, children);
+        spectraData.assignments = assignments;
+        spectraData.molecule = molecule;
       }
+
       if (!isSpectraData(child)) continue;
 
       if ((child.spectra && child.spectra.length > 0) || child.minMax) {
@@ -113,9 +119,10 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
         };
 
         if (dimension === 1) {
-          const { assignments } = spectraData;
+          const { assignments, molecule } = spectraData;
 
           const phaseParameters = getPhaseParameters(metadata);
+
           if (hasPhaseParameters(phaseParameters)) {
             const { ph0, ph1 } = phaseParameters;
             if (!('filters' in spectrum)) spectrum.filters = [];
@@ -133,13 +140,8 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
             });
           }
 
-          if (assignments) {
-            const integrationSum = info.nucleus.includes('1H')
-              ? assignments?.reduce(
-                  (total, assignment) => assignment.nbHydrogens + total,
-                  0,
-                )
-              : 100;
+          if (assignments && molecule) {
+            const integrationSum = getSumIntegration(molecule, info);
 
             let { x, y } = child.spectra[0].data;
             if (x[0] > x[1]) {
@@ -213,6 +215,24 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
   return formatSpectra(output);
 }
 
+function getSumIntegration(molecule: Molecule, info: any) {
+  const molecularFormula = molecule.getMolecularFormula().formula;
+  const elementaryAnalisys = [
+    ...molecularFormula.matchAll(/(?<element>[A-Z][a-z]?)(?<count>\d*)/g),
+  ].map((entry) => ({
+    element: entry?.groups?.element,
+    count: entry?.groups?.count ? Number(entry.groups.count) : 1,
+  }));
+
+  const currentElement = [
+    ...info.nucleus[0].matchAll(/[0-9]*(?<element>[A-Z][a-z]?)/g, '$element'),
+  ][0].groups.element;
+
+  return (
+    elementaryAnalisys.find((row) => row.element === currentElement)?.count ||
+    100
+  );
+}
 interface PhaseParameters {
   ph0: number;
   ph1: number;
@@ -245,7 +265,10 @@ interface AssignmentData {
   nbHydrogens: number;
 }
 
-function addAssignmentObject(child: any, children: any): AssignmentData[] {
+function getAssignmentObject(
+  child: any,
+  children: any,
+): { molecule?: Molecule; assignments?: AssignmentData[] } {
   const { spectra, info, meta } = child;
   const assignmentData = spectra[0].data;
   const assignments = [];
@@ -262,7 +285,7 @@ function addAssignmentObject(child: any, children: any): AssignmentData[] {
     crossReference.toLowerCase().replace(/structure: block_id = (.*)/, '$1'),
   );
 
-  if (moleculeBlockID < 1) return [];
+  if (moleculeBlockID < 1) return {};
 
   const { MOLFILE: molfile } = children[moleculeBlockID - 1].meta;
   const diaIDs = getDiastereotopicAtomIDsFromMolfile(OCL, molfile);
@@ -293,7 +316,10 @@ function addAssignmentObject(child: any, children: any): AssignmentData[] {
       joinedAssignment[key].atoms.push(assignment.atom);
     }
   }
-  return Object.values(joinedAssignment) as AssignmentData[];
+  return {
+    assignments: Object.values(joinedAssignment) as AssignmentData[],
+    molecule: diaIDs.molecule,
+  };
 }
 
 function isSpectraData(entry: Entry) {
