@@ -89,10 +89,14 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
           }
           dependentVariable.components = child.spectra;
         } else if (dimension === 2) {
-          const newMinMax = { rr: child.minMax };
-          newMinMax.rr.z = convertToFloatArray(
-            child.minMax.z,
-          ) as Float64Array[];
+          const newMinMax: Record<string, any> = info.isFid
+            ? { re: child.minMax }
+            : { rr: child.minMax };
+          for (const key in newMinMax) {
+            newMinMax[key].z = convertToFloatArray(
+              child.minMax.z,
+            ) as Float64Array[];
+          }
           dependentVariable.components = newMinMax;
         }
 
@@ -145,7 +149,10 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
               }
             }
 
-            if (hasPhaseParameters(phaseParameters) && child.spectra.length > 1) {
+            if (
+              hasPhaseParameters(phaseParameters) &&
+              child.spectra.length > 1
+            ) {
               const { ph0, ph1 } = phaseParameters;
               const { re } = reimPhaseCorrection(
                 {
@@ -206,9 +213,12 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
   return formatSpectra(output);
 }
 
-interface PhaseParameters { ph0: number, ph1: number }
+interface PhaseParameters {
+  ph0: number;
+  ph1: number;
+}
 function getPhaseParameters(metadata: any) {
-  const result: Partial<PhaseParameters> = { ph0: undefined, ph1: undefined }
+  const result: Partial<PhaseParameters> = { ph0: undefined, ph1: undefined };
 
   if ('.PHASE0' in metadata) {
     result.ph0 = parseFloat(metadata['.PHASE0']);
@@ -218,7 +228,9 @@ function getPhaseParameters(metadata: any) {
   return result;
 }
 
-function hasPhaseParameters(phaseParameters: Partial<PhaseParameters>): phaseParameters is PhaseParameters {
+function hasPhaseParameters(
+  phaseParameters: Partial<PhaseParameters>,
+): phaseParameters is PhaseParameters {
   const { ph0, ph1 } = phaseParameters;
   return ph0 !== undefined && ph1 !== undefined;
 }

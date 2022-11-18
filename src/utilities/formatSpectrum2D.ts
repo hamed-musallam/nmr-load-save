@@ -2,6 +2,33 @@ import { Spectrum2D } from '../types/Spectra/Spectrum2D';
 
 import generateID from './generateID';
 
+const defaultSER = {
+  re: {
+    z: [],
+    minX: 0,
+    minY: 0,
+    maxX: 0,
+    maxY: 0,
+  },
+  im: {
+    z: [],
+    minX: 0,
+    minY: 0,
+    maxX: 0,
+    maxY: 0,
+  },
+};
+
+const defaultQuadrant = {
+  rr: {
+    z: [],
+    minX: 0,
+    minY: 0,
+    maxX: 0,
+    maxY: 0,
+  },
+};
+
 export function formatSpectrum2D(spectrumData: any): Spectrum2D {
   const {
     id = generateID(),
@@ -45,17 +72,8 @@ export function formatSpectrum2D(spectrumData: any): Spectrum2D {
   };
 
   let { data = dependentVariables[0].components } = spectrumData;
-  console.log('data', data)
   spectrum.data = {
-    ...{
-      rr: {
-        z: [],
-        minX: 0,
-        minY: 0,
-        maxX: 0,
-        maxY: 0,
-      },
-    },
+    ...(spectrum.info.isFid ? defaultSER : defaultQuadrant),
     ...data,
   };
   spectrum.originalData = spectrum.data;
