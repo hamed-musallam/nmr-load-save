@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/cheminfo/nmr-load-save/compare/v0.5.0...v0.5.1) (2022-11-18)
+
+
+### Bug Fixes
+
+* re/im for 2D FID from jcamp ([#56](https://github.com/cheminfo/nmr-load-save/issues/56)) ([00ea823](https://github.com/cheminfo/nmr-load-save/commit/00ea82355eee70a2eba53570644c429649bc2932))
+
 ## [0.5.0](https://github.com/cheminfo/nmr-load-save/compare/v0.4.9...v0.5.0) (2022-11-17)
 
 
