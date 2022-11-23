@@ -1,8 +1,9 @@
 import migrateToVersion1 from './migrateToVersion1';
 import migrateToVersion2 from './migrateToVersion2';
 import migrateToVersion3 from './migrateToVersion3';
+import migrateToVersion4 from './migrateToVersion4';
 
-export const CURRENT_EXPORT_VERSION = 3;
+export const CURRENT_EXPORT_VERSION = 4;
 
 function migrationPipe(functions: ((data: any) => any)[]) {
   return (input: any) => functions.reduce((input, func) => func(input), input);
@@ -13,6 +14,7 @@ export function migrate(data: any): any {
     migrateToVersion1,
     migrateToVersion2,
     migrateToVersion3,
+    migrateToVersion4,
   ];
   let index = data?.version || 0;
 
