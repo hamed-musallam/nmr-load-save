@@ -11,7 +11,6 @@ export interface Spectrum1D extends Spectrum {
   peaks: Peaks;
   integrals: Integrals;
   ranges: Ranges;
-  shiftX: number;
   meta: Record<string, any>;
   info: Record<string, any>;
   originalInfo: Record<string, any>;

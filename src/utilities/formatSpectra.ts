@@ -1,5 +1,4 @@
-import { UsedColors } from '../reader/UsedColors';
-import { Output } from '../types/Output';
+import { NmriumLikeObject } from '../types/NmriumLikeObject';
 
 import { formatSpectrum1D } from './formatSpectrum1D';
 import { formatSpectrum2D } from './formatSpectrum2D';
@@ -7,17 +6,17 @@ import { formatSpectrum2D } from './formatSpectrum2D';
 const BI_DIMENSIONAL = 2;
 const MONO_DIMENSIONAL = 1;
 
-export function formatSpectra(input: any, usedColors: UsedColors): Output {
+export function formatSpectra(input: any): NmriumLikeObject {
   const { spectra: inputSpectra = [], molecules } = input;
   let spectra = [];
   for (let spectrum of inputSpectra) {
     const { info } = spectrum;
     switch (info.dimension) {
       case MONO_DIMENSIONAL:
-        spectra.push(formatSpectrum1D(spectrum, usedColors));
+        spectra.push(formatSpectrum1D(spectrum));
         break;
       case BI_DIMENSIONAL:
-        spectra.push(formatSpectrum2D(spectrum, usedColors));
+        spectra.push(formatSpectrum2D(spectrum));
         break;
       default:
         new Error('dimension does not supported');

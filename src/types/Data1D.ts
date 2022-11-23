@@ -1,6 +1,7 @@
+import { DoubleArray } from 'cheminfo-types';
+
 export interface Data1D {
-  y: Array<number>;
-  x: Array<number>;
-  re: Array<number>;
-  im: Array<number>;
+  x: DoubleArray;
+  re: DoubleArray;
+  im: DoubleArray;
 }

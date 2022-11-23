@@ -10,7 +10,6 @@ export function mapRanges<T extends NMRRangeWithSignalAndIntegration>(
   datum: Spectrum1D,
 ) {
   const { x, re } = datum.data;
-  const shiftX = 0;
   return ranges.map((newRange) => {
     const absolute = xyIntegration(
       { x, y: re },
@@ -24,7 +23,6 @@ export function mapRanges<T extends NMRRangeWithSignalAndIntegration>(
         kind: kind || 'signal',
         js,
         id: id || generateID(),
-        originDelta: signal.delta - shiftX,
         diaIDs,
       };
     });
@@ -33,8 +31,6 @@ export function mapRanges<T extends NMRRangeWithSignalAndIntegration>(
       ...newRange,
       id: newRange.id || generateID(),
       kind: signals?.[0].kind || 'signal',
-      originFrom: newRange.from - shiftX,
-      originTo: newRange.to - shiftX,
       absolute,
       signals,
     };

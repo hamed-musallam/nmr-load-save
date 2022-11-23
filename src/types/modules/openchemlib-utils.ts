@@ -13,8 +13,19 @@ interface GetShortestPathsOptions {
   maxLength: number;
 }
 
+interface DiaIDMapped extends DiaID {
+  source: number;
+  destination: number;
+}
+
+interface DiaIDsAndH {
+  oclID: string;
+  hydrogenOCLIDs: string[];
+  nbHydrogens: number;
+}
+
 declare module 'openchemlib-utils' {
-  import type { Molecule as OCLMolecule } from 'openchemlib/full';
+  import type { Molecule, Molecule as OCLMolecule } from 'openchemlib/full';
 
   function getShortestPaths(
     molecule: OCLMolecule,
@@ -24,4 +35,9 @@ declare module 'openchemlib-utils' {
   function getGroupedDiastereotopicAtomIDs(
     molecule: OCLMolecule,
   ): GroupedDiastereotopicAtomIDs;
+
+  function getDiastereotopicAtomIDsFromMolfile(
+    OCL: any,
+    molfile: string,
+  ): { map: DiaIDMapped[]; molecule: Molecule; diaIDs: DiaIDsAndH[] };
 }

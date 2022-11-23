@@ -1,20 +1,19 @@
 import { FileCollection, FileCollectionItem } from 'filelist-utils';
+import { isAnyArray } from 'is-any-array';
 
-import type { Options } from '../types/Options/Options';
-import type { Output } from '../types/Output';
-import { FILES_TYPES, FILES_SIGNATURES } from '../utilities/files/constants';
+import type { NmriumLikeObject } from '../types/NmriumLikeObject';
+import type { ParsingOptions } from '../types/Options/ParsingOptions';
+import { FILES_TYPES } from '../utilities/files/constants';
 import { getFileExtension } from '../utilities/files/getFileExtension';
 import { hasBruker } from '../utilities/hasBruker';
 import { hasOthers } from '../utilities/hasOthers';
 
-import { UsedColors } from './UsedColors';
 import { readBruker } from './readBruker';
 import { readJDF } from './readJDF';
-import { readJSON } from './readJSON';
 import { readJcamp } from './readJcamp';
 import { readNMReData } from './readNMReData';
-import { readZip, readZipFile } from './readZip';
-import { isAnyArray } from 'is-any-array';
+import { readNMRium } from './readNMRium';
+import { readZipFile } from './readZip';
 
 /**
  * read nmr data based on the file extension.
@@ -31,6 +30,7 @@ function ensureFileCollection<T extends FileCollectionItem | FileCollection>(
       'For a set of fileCollectionItems pass a FileCollection instance',
     );
   }
+
   return isFileCollection(input) ? input : new FileCollection([input]);
 }
 
@@ -42,16 +42,14 @@ function isFileCollection(
 
 export async function read(
   input: FileCollection | FileCollectionItem,
-  usedColors: UsedColors = { '1d': [], '2d': [] },
-  options: Partial<Options> = {},
-): Promise<Output> {
-  let result: Output = { spectra: [], molecules: [] };
-
+  options: Partial<ParsingOptions> = {},
+): Promise<NmriumLikeObject> {
+  let result: NmriumLikeObject = { spectra: [], molecules: [] };
   const fileCollection = ensureFileCollection(input);
 
   if (hasBruker(fileCollection)) {
     const { brukerParsingOptions } = options;
-    let partialResult: Output = await readBruker(fileCollection, usedColors, {
+    let partialResult: NmriumLikeObject = await readBruker(fileCollection, {
       ...brukerParsingOptions,
     });
     if (partialResult.spectra) result.spectra.push(...partialResult.spectra);
@@ -64,11 +62,7 @@ export async function read(
     : ([] as FileCollectionItem[]);
 
   for (let file of residualFiles) {
-    const { spectra = [], molecules = [] } = await process(
-      file,
-      usedColors,
-      options,
-    );
+    const { spectra = [], molecules = [] } = await process(file, options);
     result.spectra.push(...spectra);
     result.molecules.push(...molecules);
   }
@@ -77,9 +71,8 @@ export async function read(
 
 async function process(
   file: FileCollectionItem,
-  usedColors: UsedColors,
-  options: Partial<Options>,
-): Promise<Output> {
+  options: Partial<ParsingOptions>,
+): Promise<NmriumLikeObject> {
   const { jcampParsingOptions } = options;
   const extension = getFileExtension(file.name);
   switch (extension) {
@@ -88,35 +81,17 @@ async function process(
     case FILES_TYPES.JDX:
     case FILES_TYPES.DX:
     case FILES_TYPES.JCAMP:
-      return readJcamp(file, usedColors, jcampParsingOptions);
+      return readJcamp(file, jcampParsingOptions);
     case FILES_TYPES.JDF:
-      return readJDF(file, usedColors, { name: file.name });
+      return readJDF(file, { name: file.name });
     case FILES_TYPES.ZIP:
-      return readZipFile(file, usedColors, options);
+      return readZipFile(file, options);
     case FILES_TYPES.NMREDATA:
-      return readNMReData(file, usedColors, options);
+      return readNMReData(file, options);
     case FILES_TYPES.NMRIUM:
     case FILES_TYPES.JSON:
-      return processJSON(file, usedColors, options);
+      return readNMRium(file, options);
     default:
       throw new Error(`The extension ${extension} is not supported`);
-  }
-}
-
-async function processJSON(
-  file: FileCollectionItem,
-  usedColors: UsedColors,
-  options: Partial<Options>,
-) {
-  const buffer = await file.arrayBuffer();
-  const fileSignature = new Uint8Array(buffer)
-    .slice(0, 4)
-    .reduce((acc, byte) => (acc += byte.toString(16).padStart(2, '0')), '');
-
-  if (fileSignature === FILES_SIGNATURES.ZIP) {
-    return readZip(buffer, usedColors, options);
-  } else {
-    const decoder = new TextDecoder('utf8');
-    return readJSON(decoder.decode(buffer), usedColors);
   }
 }

@@ -1,13 +1,24 @@
-import { UsedColors } from '../reader/UsedColors';
 import { Spectrum2D } from '../types/Spectra/Spectrum2D';
 
 import generateID from './generateID';
-import { get2DColor } from './getColor';
 
-export function formatSpectrum2D(
-  spectrumData: any,
-  usedColors: UsedColors,
-): Spectrum2D {
+const defaultMinMax = {
+  z: [],
+  minX: 0,
+  minY: 0,
+  maxX: 0,
+  maxY: 0,
+};
+const defaultSER = {
+  re: defaultMinMax,
+  im: defaultMinMax,
+};
+
+const defaultQuadrant = {
+  rr: defaultMinMax,
+};
+
+export function formatSpectrum2D(spectrumData: any): Spectrum2D {
   const {
     id = generateID(),
     meta = {},
@@ -16,6 +27,7 @@ export function formatSpectrum2D(
     source = {},
     filters = [],
     zones = [],
+    ...residualSpectrumData
   } = spectrumData;
 
   const spectrum: any = { id, meta, filters };
@@ -40,7 +52,6 @@ export function formatSpectrum2D(
 
   spectrum.display = {
     name: spectrumData.display?.name ? spectrumData.display.name : generateID(),
-    ...getColor(spectrumData, usedColors),
     isPositiveVisible: true,
     isNegativeVisible: true,
     isVisible: true,
@@ -50,35 +61,13 @@ export function formatSpectrum2D(
   };
 
   let { data = dependentVariables[0].components } = spectrumData;
-
   spectrum.data = {
-    ...{
-      z: [],
-      minX: 0,
-      minY: 0,
-      maxX: 0,
-      maxY: 0,
-    },
+    ...(spectrum.info.isFid ? defaultSER : defaultQuadrant),
     ...data,
   };
   spectrum.originalData = spectrum.data;
 
   spectrum.zones = { ...{ values: [], options: {} }, ...zones };
 
-  return spectrum;
-}
-
-function getColor(options: any, usedColors: UsedColors) {
-  let color = { positiveColor: 'red', negativeColor: 'blue' };
-  if (
-    options?.display?.negativeColor === undefined ||
-    options?.display?.positiveColor === undefined
-  ) {
-    color = get2DColor(options.info.experiment, usedColors['2d'] || []);
-  }
-
-  if (usedColors['2d']) {
-    usedColors['2d'].push(color.positiveColor);
-  }
-  return color;
+  return { ...residualSpectrumData, ...spectrum };
 }

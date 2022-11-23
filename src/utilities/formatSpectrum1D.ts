@@ -1,27 +1,24 @@
 import { isAnyArray } from 'is-any-array';
 
-import { UsedColors } from '../reader/UsedColors';
 import { Spectrum1D } from '../types/Spectra/Spectrum1D';
 
 import generateID from './generateID';
-import { get1DColor } from './getColor';
 import { getData } from './getData';
 
-export function formatSpectrum1D(
-  spectrumData: any,
-  usedColors: UsedColors,
-): Spectrum1D {
+export function formatSpectrum1D(spectrumData: any): Spectrum1D {
   const {
     id = generateID(),
-    shiftX = 0,
     meta,
     peaks = {},
     filters = [],
     info = {},
+    ranges = {},
     source = {},
+    integrals = {},
     dependentVariables = [],
+    ...residualSpectrumData
   } = spectrumData;
-  let spectrum: any = { id, shiftX, meta, filters };
+  let spectrum: any = { id, meta, filters };
 
   spectrum.source = {
     ...{
@@ -58,7 +55,6 @@ export function formatSpectrum1D(
 
   spectrum.display = {
     name: spectrumData.display?.name ? spectrumData.display.name : id,
-    ...getColor(spectrumData, usedColors),
     isVisible: true,
     isPeaksMarkersVisible: true,
     isRealSpectrumVisible: true,
@@ -69,31 +65,13 @@ export function formatSpectrum1D(
   spectrum.originalData = spectrum.data;
 
   spectrum.peaks = { ...{ values: [], options: {} }, ...peaks };
-
-  spectrum.integrals = {
-    ...{ values: [], options: { sum: 100 } },
-    ...spectrumData.integrals,
-  };
+  spectrum.ranges = { ...{ values: [], options: {} }, ...ranges };
+  spectrum.integrals = { ...{ values: [], options: {} }, ...integrals };
 
   spectrum.ranges = {
-    ...{ values: [], options: { sum: 100 } },
+    ...{ values: [] },
     ...spectrumData.ranges,
   };
 
-  return spectrum;
-}
-
-function getColor(options: any, usedColors: UsedColors) {
-  let color = 'black';
-  if (options?.display?.color === undefined) {
-    color = get1DColor(false, usedColors['1d'] || []);
-  } else {
-    color = options.display.color;
-  }
-
-  if (usedColors['1d']) {
-    usedColors['1d'].push(color);
-  }
-
-  return { color };
+  return { ...residualSpectrumData, ...spectrum };
 }

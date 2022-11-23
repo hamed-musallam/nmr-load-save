@@ -5,7 +5,6 @@
 
 describe('writeNmredata', () => {
   it.todo('i need to write this test');
-  // eslint-disable-next-line jest/no-commented-out-tests
   // it('read nmrium and write nmredata', async () => {
   // const path = './src/writer/__tests__/2-molecules-2-spectra.json';
   // const files = await fileListFromPath(path);
