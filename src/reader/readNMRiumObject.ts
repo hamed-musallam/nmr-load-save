@@ -25,7 +25,7 @@ export async function readNMRiumObject(
     if (datum.source.jcampURL != null) {
       const { jcampURL, jcampSpectrumIndex = 0 } = datum.source;
       const { spectra, molecules } = sourceCache[jcampURL];
-      nmriumLikeObject.molecules.push(...molecules);
+      if (molecules.length > 0) nmriumLikeObject.molecules.push(...molecules);
       nmriumLikeObject.spectra.push(
         mergeData(datum, makeACopyWithNewID(spectra[jcampSpectrumIndex])),
       );
@@ -36,9 +36,9 @@ export async function readNMRiumObject(
         datum.source.jcamp,
         jcampParsingOptions,
       );
-      nmriumLikeObject.molecules.push(...molecules);
+      if (molecules.length > 0) nmriumLikeObject.molecules.push(...molecules);
       nmriumLikeObject.spectra.push(
-        mergeData(datum, spectra[jcampSpectrumIndex]),
+        mergeData(datum, makeACopyWithNewID(spectra[jcampSpectrumIndex])),
       );
     } else {
       const { dimension } = datum.info;

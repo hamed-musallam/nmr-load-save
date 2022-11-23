@@ -14,7 +14,12 @@ import { convertToFloatArray } from '../utilities/convertToFloatArray';
 import { formatSpectra } from '../utilities/formatSpectra';
 import generateID from '../utilities/generateID';
 import { getInfoFromMeta } from '../utilities/getInfoFromMeta';
+import { getIntegrationSum } from '../utilities/getIntegrationSum';
 import { getNucleusFromMetadata } from '../utilities/getNucleusFromMetadata';
+import {
+  getPhaseParameters,
+  hasPhaseParameters,
+} from '../utilities/getPhaseParameters';
 
 const expectedTypes = ['ndnmrspectrum', 'ndnmrfid', 'nmrspectrum', 'nmrfid'];
 
@@ -41,6 +46,7 @@ export function readJcampFromURL(
 }
 
 interface SpectraData {
+  molecules?: Array<{ id: string; molfile: string }>;
   molecule?: Molecule;
   assignments?: AssignmentData[];
 }
@@ -60,13 +66,14 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
     profiling,
   });
   for (const entry of parsedData.entries) {
-    //@ts-expect-error children is not included
-    const children = 'children' in entry ? entry.children : [entry];
+    const { children = [entry] } = entry as { children?: any };
     const spectraData: SpectraData = {};
     for (const child of children) {
       const { meta, dataClass = '', dataType = '' } = child;
       if (meta.MOLFILE) {
-        output.molecules.push({
+        if (!spectraData.molecules) spectraData.molecules = [];
+        spectraData.molecules.push({
+          id: generateID(),
           molfile: String(meta.MOLFILE),
         });
       }
@@ -141,7 +148,7 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
           }
 
           if (assignments && molecule) {
-            const integrationSum = getSumIntegration(molecule, info);
+            const integrationSum = getIntegrationSum(molecule, info);
 
             let { x, y } = child.spectra[0].data;
             if (x[0] > x[1]) {
@@ -166,6 +173,7 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
               );
               y = re;
             }
+
             const ranges = xyAutoRangesPicking(
               { x, y },
               {
@@ -173,7 +181,9 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
                 ranges: { frequency, integrationSum },
               },
             );
+
             assignments?.sort((a, b) => b.delta - a.delta);
+
             for (const range of ranges) {
               let currentIndex = 0;
               const { from, to } = range;
@@ -204,55 +214,31 @@ export function processJcamp(text: string, options: JcampParsingOptions = {}) {
                 range.signals = signals;
               }
             }
-            spectrum.ranges = { values: ranges };
+            spectrum.ranges = {
+              values: ranges.map((range) => {
+                delete range.integration;
+                return range;
+              }),
+              options: {
+                sum: integrationSum,
+                isSumConstant: true,
+                sumAuto: true,
+              },
+            };
+            if (spectraData.molecules) {
+              const { id } = spectraData.molecules[0];
+              spectrum.ranges.options.moleculeId = id;
+            }
           }
         }
-
+        if (spectraData.molecules) {
+          output.molecules.push(...spectraData.molecules);
+        }
         output.spectra.push(spectrum);
       }
     }
   }
   return formatSpectra(output);
-}
-
-function getSumIntegration(molecule: Molecule, info: any) {
-  const molecularFormula = molecule.getMolecularFormula().formula;
-  const elementaryAnalisys = [
-    ...molecularFormula.matchAll(/(?<element>[A-Z][a-z]?)(?<count>\d*)/g),
-  ].map((entry) => ({
-    element: entry?.groups?.element,
-    count: entry?.groups?.count ? Number(entry.groups.count) : 1,
-  }));
-
-  const currentElement = [
-    ...info.nucleus[0].matchAll(/[0-9]*(?<element>[A-Z][a-z]?)/g, '$element'),
-  ][0].groups.element;
-
-  return (
-    elementaryAnalisys.find((row) => row.element === currentElement)?.count ||
-    100
-  );
-}
-interface PhaseParameters {
-  ph0: number;
-  ph1: number;
-}
-function getPhaseParameters(metadata: any) {
-  const result: Partial<PhaseParameters> = { ph0: undefined, ph1: undefined };
-
-  if ('.PHASE0' in metadata) {
-    result.ph0 = parseFloat(metadata['.PHASE0']);
-    result.ph1 = parseFloat(metadata['.PHASE1']);
-  }
-
-  return result;
-}
-
-function hasPhaseParameters(
-  phaseParameters: Partial<PhaseParameters>,
-): phaseParameters is PhaseParameters {
-  const { ph0, ph1 } = phaseParameters;
-  return ph0 !== undefined && ph1 !== undefined;
 }
 
 interface AssignmentData {
