@@ -45,18 +45,19 @@ export default function migrateToVersion4(data: any): any {
   if (data?.version === 4) return data;
 
   const spectra = [];
-
   for (const spectrum of data.spectra) {
-    const { dimension, isFt } = spectrum.info;
-    if (dimension === 2) {
-      if (isFt) {
-        spectrum.data = { rr: spectrum.data };
-      } else {
-        // skip pushing 2d fid spectrum to spectra array
-        continue;
+    //only migrate raw data
+    if (!spectrum.source?.jcampURL) {
+      const { dimension, isFt } = spectrum.info;
+      if (dimension === 2) {
+        if (isFt) {
+          spectrum.data = { rr: spectrum.data };
+        } else {
+          // skip pushing 2d fid spectrum to spectra array
+          continue;
+        }
       }
     }
-
     spectra.push(spectrum);
   }
 
