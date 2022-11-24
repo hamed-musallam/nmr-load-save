@@ -47,7 +47,10 @@ export default function migrateToVersion4(data: any): any {
   const spectra = [];
   for (const spectrum of data.spectra) {
     //only migrate raw data
-    if (!spectrum.source?.jcampURL) {
+    if (
+      !spectrum.source ||
+      !['jcampURL', 'jcamp'].some((key) => key in spectrum.source)
+    ) {
       const { dimension, isFt } = spectrum.info;
       if (dimension === 2) {
         if (isFt) {
